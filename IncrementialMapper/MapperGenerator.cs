@@ -14,8 +14,8 @@ public class MapperGenerator : IIncrementalGenerator
         ).Where(static node => node is not null);
 
         var compilation = context.CompilationProvider.Combine(provider.Collect());
-        
+
         // When the time is right, register the source outputter here.
-        // context.RegisterSourceOutput(compilation, (spc, source) => SymbolMapper.MapClassDeclaration(spc, source!, attachDebugger: false));
+        context.RegisterSourceOutput(compilation, (spc, source) => GenerationStarter.Begin(spc, source.Left, source!.Right!, attachDebugger: false));
     }
 }

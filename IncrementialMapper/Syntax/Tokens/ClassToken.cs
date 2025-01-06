@@ -28,7 +28,7 @@ internal sealed record ClassToken(
     /// <summary>
     /// Class visibility, this defaults to public if null.
     /// </summary>
-    public VisibilityKind? Visibility { get; } = Visibility ?? Kinds.VisibilityKind.Public;
+    public VisibilityKind? Visibility { get; } = Visibility ?? VisibilityKind.Public;
 
     /// <summary>
     /// <para>
