@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 
-namespace IncrementialMapper.Attributes.Excludes
+namespace IncrementialMapper.Attributes.Excludes;
+
+[AttributeUsage(AttributeTargets.Property)]
+[Conditional("EXCLUDE_RUNTIME")]
+public class ExcludeProperty : Attribute
 {
-    internal class ExcludeProperty
-    {
-    }
 }

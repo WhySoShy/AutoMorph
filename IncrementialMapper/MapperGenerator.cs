@@ -16,6 +16,6 @@ public class MapperGenerator : IIncrementalGenerator
         var compilation = context.CompilationProvider.Combine(provider.Collect());
 
         // When the time is right, register the source outputter here.
-        context.RegisterSourceOutput(compilation, (spc, source) => GenerationStarter.Begin(spc, source.Left, source!.Right!, attachDebugger: false));
+        context.RegisterSourceOutput(compilation, (spc, source) => GenerationStarter.Begin(spc, source.Left, source!.Right!, attachDebugger: true));
     }
 }

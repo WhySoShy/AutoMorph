@@ -16,45 +16,41 @@ internal static class GenerationStarter
 {
     public static void Begin(SourceProductionContext context, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> foundClasses, bool attachDebugger)
     {
-        AttachDebugger(attachDebugger);
-
         if (!foundClasses.Any())
             return;
 
         foreach (TypeDeclarationSyntax currentClassSyntax in foundClasses)
         {
-            // It should only continue if it can be parsed as a INamedTypeSymbol
-            if (ModelExtensions.GetDeclaredSymbol(compilation.GetSemanticModel(currentClassSyntax.SyntaxTree), currentClassSyntax) is not INamedTypeSymbol sourceSymbol)
+            
+            if (
+                    // It should only continue if it can be parsed as a INamedTypeSymbol
+                    ModelExtensions.GetDeclaredSymbol(compilation.GetSemanticModel(currentClassSyntax.SyntaxTree), currentClassSyntax) is not INamedTypeSymbol sourceSymbol ||
+                    // It should only continue if the target exists.
+                    GetTargetFromAttribute<INamedTypeSymbol, SGMapperAttribute>(sourceSymbol) is not INamedTypeSymbol targetSymbol ||
+                    // Beacuse the generator does not support parameterless constructors, it should not try to generate on them.
+                    !targetSymbol.InstanceConstructors.Any(x => x.Parameters.Length == 0)
+                )
                 continue;
 
-            // It should only continue if the target exists.
-            if (GetTargetFromAttribute<INamedTypeSymbol, SGMapperAttribute>(sourceSymbol) is not INamedTypeSymbol targetSymbol)
-                continue;
+            HashSet<ReferencePropertyToken> validatedProperties = ApplyValidProperties(sourceSymbol, targetSymbol);
 
-            // Beacuse the generator does not support parameterless constructors, it should not try to generate on them.
-            if (!targetSymbol.InstanceConstructors.Any(x => x.Parameters.Length == 0))
+            if (!validatedProperties.Any())
                 continue;
+            
+            HashSet<MethodToken> methods = [];
 
+            if (!methods.Any())
+                continue;
+            
             ClassToken token = new ClassToken(
                     SourceClass: TransformClass(sourceSymbol),
                     TargetClass: TransformClass(targetSymbol),
-                    Properties: [],
-                    Methods: [],
+                    Properties: validatedProperties,
+                    Methods: methods,
                     Visibility: VisibilityKind.Public,
                     Modifiers: ApplyModifiers(currentClassSyntax, sourceSymbol)
                 );
-        }
-    }
-
-    /// <summary>
-    /// Attach the debugger if it is not present and it should.
-    /// </summary>
-    static void AttachDebugger(bool attachDebugger)
-    {
-        // Enable debugging
-        // But only attach it if there is no other debugger running, to ensure only 1 is running at the time.
-        if (attachDebugger && !Debugger.IsAttached) 
-            Debugger.Launch();
+        }   
     }
 
     /// <summary>
@@ -68,7 +64,7 @@ internal static class GenerationStarter
     static ModifierKind[] ApplyModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
     {
         ModifierKind[] modifiers = [];
-        
+
         if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             modifiers[0] = ModifierKind.Partial;
 
@@ -101,18 +97,19 @@ internal static class GenerationStarter
 
         foreach (ISymbol property in sourceProperties)
         {
-            string? nameOfTargetProperty = GetTargetFromAttribute<string, SGPropertyAttribute>(property);
-
-            if (string.IsNullOrEmpty(nameOfTargetProperty))
+            // Ensure that the target is either set by the property name or specially set by the user.
+            string? nameOfTargetProperty = GetTargetFromAttribute<string, SGPropertyAttribute>(property) ?? property.Name;
+            
+            ISymbol? foundTargetProperty = targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty);
+            
+            if (foundTargetProperty is null || ContainsAttribute<ExcludeProperty>(foundTargetProperty) || !SymbolsCanReach(foundTargetProperty, property))
                 continue;
-
-            string? nameofFoundTargetProperty = targetProperties.Select(x => x.Name).FirstOrDefault(x => x == nameOfTargetProperty);
-
-            if (string.IsNullOrEmpty(nameofFoundTargetProperty))
-                continue;
-
-            mappedProperties.Add(new ReferencePropertyToken())
+    
+            mappedProperties.Add(new ReferencePropertyToken(VisibilityKind.Public, property.Name, foundTargetProperty.Name));
+            targetProperties.Remove(foundTargetProperty);
         }
+
+        return mappedProperties;
     }
 
     #region Attribute related methods
@@ -126,7 +123,7 @@ internal static class GenerationStarter
 
         attributeData ??= GetAttribute<TAttribute>(currentClassSymbol);
 
-        if (attributeData is null or { ConstructorArguments.Length: > 0 })
+        if (attributeData is null or { ConstructorArguments.Length: <= 0 })
             return default;
 
         return attributeData.ConstructorArguments[0].Value as TReturn;
@@ -143,4 +140,23 @@ internal static class GenerationStarter
     }
 
     #endregion
+
+    /// <summary>
+    /// Checks if the symbols can see each other, determined by their visibility level.
+    /// </summary>
+    static bool SymbolsCanReach(ISymbol targetProperty, ISymbol sourceProperty)
+    {
+        Accessibility targetVisibility = targetProperty.DeclaredAccessibility;
+        Accessibility sourceVisibility = sourceProperty.DeclaredAccessibility;
+
+        // Check if either of them are non-accessible to the other.
+        // There is no support for inherited classes, and dont think i will implement.
+        if ((targetVisibility | sourceVisibility) is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.Friend)
+            return false;
+
+        if ((targetVisibility | sourceVisibility) is Accessibility.Internal)
+            return targetProperty.ContainingAssembly.GlobalNamespace == sourceProperty.ContainingAssembly.GlobalNamespace!;
+
+        return true;
+    }
 }

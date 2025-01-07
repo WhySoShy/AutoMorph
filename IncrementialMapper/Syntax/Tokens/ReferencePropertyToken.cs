@@ -11,5 +11,6 @@ internal record ReferencePropertyToken(
     public string SourcePropertyName { get; } = SourcePropertyName;
     public string TargetPropertyName { get; } = TargetPropertyName;
     
+    // Unsure if i even need this..
     public VisibilityKind VisibilityKind { get; } = VisibilityKind;
 }
