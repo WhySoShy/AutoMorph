@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using IncrementialMapper.Attributes.Base;
 
 namespace IncrementialMapper.Attributes.Includes;
 
@@ -9,9 +10,6 @@ namespace IncrementialMapper.Attributes.Includes;
 ///     IQueryable-IQueryable object mapper that maps every object inside the IQueryable.
 /// </para>
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method)]
 [Conditional("EXCLUDE_RUNTIME")]
-public class IncludeIQueryable : Attribute
-{
-    
-}
+public class IncludeIQueryable(string? key = null) : BaseAttribute(key);

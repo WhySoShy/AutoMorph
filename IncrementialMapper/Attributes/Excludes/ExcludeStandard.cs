@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using IncrementialMapper.Attributes.Base;
 
 namespace IncrementialMapper.Attributes.Excludes;
 
@@ -8,7 +9,4 @@ namespace IncrementialMapper.Attributes.Excludes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 [Conditional("EXCLUDE_RUNTIME")]
-public class ExcludeStandard : Attribute
-{
-    
-}
+public class ExcludeStandard(string? key = null) : BaseAttribute(key);

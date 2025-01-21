@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using IncrementialMapper.Attributes.Base;
 
 namespace IncrementialMapper.Attributes.Includes;
 
@@ -9,9 +10,6 @@ namespace IncrementialMapper.Attributes.Includes;
 ///     collection-collection object mapper that maps every object inside the collection.
 /// </para>
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method)]
 [Conditional("EXCLUDE_RUNTIME")]
-public class IncludeLinq : Attribute
-{
-
-}
+public class IncludeLinq(string? key = null) : BaseAttribute(key);
