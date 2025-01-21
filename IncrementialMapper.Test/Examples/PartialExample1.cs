@@ -28,6 +28,14 @@ public partial class PartialExample1
     public string PropTarget3 { get; set; } = string.Empty;
 }
 
+public partial class PartialExample1
+{
+    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target()
+    {
+        throw new NotImplementedException();
+    }
+}
+
 
 // This could be an DB Entity for example.
 public class PartialExample1Target
@@ -35,14 +43,4 @@ public class PartialExample1Target
     public string PropTarget1 { get; set; } = string.Empty;
     public string PropTarget2 { get; set; } = string.Empty;
     public string PropTarget3 { get; set; } = string.Empty;
-}
-
-// This is just to extend the partial method and remove the error.
-public partial class PartialExample1
-{
-    // This method is just here to extend the partial method.
-    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target()
-    {
-        throw new NotImplementedException();
-    }
 }

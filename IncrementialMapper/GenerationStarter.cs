@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using IncrementialMapper.Attributes.Includes;
+using IncrementialMapper.SyntaxProviders;
 using IncrementialMapper.Utilities;
-using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
 
 namespace IncrementialMapper;
 
@@ -39,7 +39,8 @@ internal static class GenerationStarter
             if (!validatedProperties.Any())
                 continue;
             
-            HashSet<MethodToken> methods = ApplyMethods(sourceSymbol, currentClassSyntax, targetSymbol.Name);
+            ModifierKind[] kinds = ApplyModifiers(currentClassSyntax, sourceSymbol);
+            HashSet<MethodToken> methods = ApplyMethods(sourceSymbol, kinds, targetSymbol.Name);
 
             if (!methods.Any())
                 continue;
@@ -50,8 +51,10 @@ internal static class GenerationStarter
                     Properties: validatedProperties,
                     Methods: methods,
                     Visibility: VisibilityKind.Public,
-                    Modifiers: ApplyModifiers(currentClassSyntax, sourceSymbol)
+                    Modifiers: kinds
                 );
+            
+            SourceGenerator.GenerateCode(token, context);
         }   
     }
 
@@ -59,15 +62,19 @@ internal static class GenerationStarter
     
     static ModifierKind[] ApplyModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
     {
-        ModifierKind[] modifiers = [];
+        List<ModifierKind> modifiers = [];
 
-        if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
-            modifiers[0] = ModifierKind.Partial;
-
-        if (sourceSymbol.IsStatic)
-            modifiers[1] = ModifierKind.Static;
-
-        return modifiers;
+        if (!sourceSymbol.ContainsAttribute<ExcludeAsStatic>())
+            modifiers.Add(ModifierKind.Static);
+        
+        if (!modifiers.Any(x => x == ModifierKind.Static) && currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+            modifiers.Add(ModifierKind.Partial);
+        
+        // Ensure that it has at least one modifier.
+        if (!modifiers.Any())
+            modifiers.Add(ModifierKind.Static);
+        
+        return modifiers.ToArray();
     }
 
     static HashSet<ReferencePropertyToken> ApplyValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass)
@@ -109,32 +116,41 @@ internal static class GenerationStarter
         return mappedProperties;
     }
 
-    static HashSet<MethodToken> ApplyMethods(INamedTypeSymbol sourceSymbol, TypeDeclarationSyntax currentClass, string targetClassName)
+    static HashSet<MethodToken> ApplyMethods(INamedTypeSymbol sourceSymbol, ModifierKind[] classKinds, string targetClassName)
     {
         HashSet<MethodToken> methods = [];
 
         IEnumerable<ISymbol> availableMethods = [];
         
-        // Check if the class has any of the Include attributes attached.
-        if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
-            availableMethods = [
-                .. sourceSymbol
-                    .GetAttributes()
-                    .Where(x => 
-                        ValidAttributes.ValidIncludeAttributes
-                            .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{x.AttributeClass!.Name}"))
-                    .Select(y => y.AttributeClass)!
-            ];
-        
-        // Combine the 2 collections into one, this allows us to enumerate once over the same list, to collect 
-        availableMethods =
-            [ .. availableMethods, 
+        // It should only check if there is any methods marked as partial with an include attribute, if the class has been marked as partial.
+        // if (classKinds.Any(x => x == ModifierKind.Partial))
+            // Find the attributes that are eligible on the methods.
+            availableMethods =
+            [
                 .. sourceSymbol
                     .GetMembers()
-                    .Where(x =>
-                        x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
-                    // TODO: Find a way to make this less hard-coded.
+                    // We only need to iterate on the Methods, nothing else.
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
+                    .Select(x => x
+                        .GetAttributes()
+                        .FirstOrDefault(z => 
+                            ValidAttributes.ValidIncludeAttributes
+                                .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{z.AttributeClass!.Name}"))!
+                        .AttributeClass
+                    )!
+               // TODO: Find a way to make this less hard-coded.
             ];
+        
+        // Find the attributes that are eligible on the class.
+        availableMethods = [
+            .. availableMethods, // Append the collections together.
+            .. sourceSymbol
+                .GetAttributes()
+                .Where(x => 
+                    ValidAttributes.ValidIncludeAttributes
+                        .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{x.AttributeClass!.Name}"))
+                .Select(y => y.AttributeClass)!
+        ];
         
         // Go through each attribute, and check if it is a valid attribute.
         foreach (ISymbol attribute in availableMethods)

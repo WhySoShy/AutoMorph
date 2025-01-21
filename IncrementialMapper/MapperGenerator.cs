@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace IncrementialMapper;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public class MapperGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)

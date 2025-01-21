@@ -7,7 +7,7 @@ internal enum VisibilityKind
     Protected,
     Internal,
     
-    // Dont know if these are being supported.
+    // Don't know if these are being supported.
     Protected_Private,
     Protected_Internal
 }
