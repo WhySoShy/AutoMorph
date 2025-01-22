@@ -11,11 +11,17 @@ using System.Linq;
 using IncrementialMapper.Attributes.Includes;
 using IncrementialMapper.SyntaxProviders;
 using IncrementialMapper.Utilities;
+using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
 
 namespace IncrementialMapper;
 
 internal static class GenerationStarter
 {
+    /// <summary>
+    /// Contains all the classes that already got a structure.
+    /// </summary>
+    private static readonly HashSet<string> _cachedClasses = new();
+    
     public static void Begin(SourceProductionContext context, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> foundClasses, bool attachDebugger)
     {
         if (!foundClasses.Any())
@@ -23,7 +29,6 @@ internal static class GenerationStarter
 
         foreach (TypeDeclarationSyntax currentClassSyntax in foundClasses)
         {
-            
             if (
                     // It should only continue if it can be parsed as a INamedTypeSymbol
                     ModelExtensions.GetDeclaredSymbol(compilation.GetSemanticModel(currentClassSyntax.SyntaxTree), currentClassSyntax) is not INamedTypeSymbol sourceSymbol ||
@@ -34,33 +39,41 @@ internal static class GenerationStarter
                 )
                 continue;
             
-            HashSet<ReferencePropertyToken> validatedProperties = ApplyValidProperties(sourceSymbol, targetSymbol);
+            ReferenceClassToken sourceClass = TransformClass(sourceSymbol);
+
+            if (!_cachedClasses.Add(sourceClass.FullPath))
+                continue;
+            
+            ReferenceClassToken targetClass = TransformClass(targetSymbol);
+            
+            // TODO: Display a warning with a analyzer, if the class does not contain any properties.
+            HashSet<ReferencePropertyToken> validatedProperties = GetValidProperties(sourceSymbol, targetSymbol);
             
             if (!validatedProperties.Any())
                 continue;
             
-            ModifierKind[] kinds = ApplyModifiers(currentClassSyntax, sourceSymbol);
-            HashSet<MethodToken> methods = ApplyMethods(sourceSymbol, kinds, targetSymbol.Name);
+            ModifierKind[] kinds = GetModifiers(currentClassSyntax, sourceSymbol);
+            HashSet<MethodToken> methods = GetMethods(sourceSymbol, kinds, targetSymbol.Name);
 
             if (!methods.Any())
                 continue;
             
             ClassToken token = new ClassToken(
-                    SourceClass: TransformClass(sourceSymbol),
-                    TargetClass: TransformClass(targetSymbol),
+                    SourceClass: sourceClass,
+                    TargetClass: targetClass,
                     Properties: validatedProperties,
                     Methods: methods,
                     Visibility: VisibilityKind.Public,
                     Modifiers: kinds
                 );
-            
+
             SourceGenerator.GenerateCode(token, context);
         }   
     }
 
     #region Applying Methods
     
-    static ModifierKind[] ApplyModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
+    static ModifierKind[] GetModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
     {
         List<ModifierKind> modifiers = [];
 
@@ -77,7 +90,7 @@ internal static class GenerationStarter
         return modifiers.ToArray();
     }
 
-    static HashSet<ReferencePropertyToken> ApplyValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass)
+    static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass)
     {
         List<ISymbol> sourceProperties = sourceClass
                     .GetMembers()
@@ -116,55 +129,49 @@ internal static class GenerationStarter
         return mappedProperties;
     }
 
-    static HashSet<MethodToken> ApplyMethods(INamedTypeSymbol sourceSymbol, ModifierKind[] classKinds, string targetClassName)
+    static HashSet<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, ModifierKind[] classKinds, string targetClassName)
     {
         HashSet<MethodToken> methods = [];
 
-        IEnumerable<ISymbol> availableMethods = [];
-        
-        // It should only check if there is any methods marked as partial with an include attribute, if the class has been marked as partial.
-        // if (classKinds.Any(x => x == ModifierKind.Partial))
-            // Find the attributes that are eligible on the methods.
-            availableMethods =
-            [
-                .. sourceSymbol
-                    .GetMembers()
-                    // We only need to iterate on the Methods, nothing else.
-                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
-                    .Select(x => x
-                        .GetAttributes()
-                        .FirstOrDefault(z => 
-                            ValidAttributes.ValidIncludeAttributes
-                                .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{z.AttributeClass!.Name}"))!
-                        .AttributeClass
-                    )!
-               // TODO: Find a way to make this less hard-coded.
-            ];
-        
-        // Find the attributes that are eligible on the class.
-        availableMethods = [
-            .. availableMethods, // Append the collections together.
+        IEnumerable<(ISymbol symbol, bool isExternal)> availableMethods = [
+            .. sourceSymbol
+                .GetMembers()
+                // We only need to iterate on the Methods, nothing else.
+                .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
+                .Select(x => (x
+                    .GetAttributes()
+                    .FirstOrDefault(z => 
+                        ValidAttributes.ValidIncludeAttributes
+                            .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{z.AttributeClass!.Name}"))!
+                    .AttributeClass, true)
+                )!,
             .. sourceSymbol
                 .GetAttributes()
                 .Where(x => 
                     ValidAttributes.ValidIncludeAttributes
                         .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{x.AttributeClass!.Name}"))
-                .Select(y => y.AttributeClass)!
+                .Select(y => (y.AttributeClass, false))!
+            
+            // TODO: Find a way to make this less hard-coded.
         ];
         
         // Go through each attribute, and check if it is a valid attribute.
-        foreach (ISymbol attribute in availableMethods)
+        foreach (var attribute in availableMethods)
         {
-            if (attribute is null)
+            if (attribute.symbol is null)
                 continue;
             
-            string fullAttributeName = attribute.ToDisplayString();
+            string fullAttributeName = attribute.symbol.ToDisplayString();
             
             // Check if the attribute is valid for the enabled attributes.
             if (ValidAttributes.ValidIncludeAttributes.FirstOrDefault(x => x.Key == fullAttributeName).Value is not { } methodKind)
                 continue;
+
+            ModifierKind[] modifiers = new ModifierKind[1];
+
+            modifiers[0] = attribute.isExternal ? ModifierKind.Partial : ModifierKind.Static;
             
-            methods.Add(new MethodToken([ModifierKind.Static], methodKind));
+            methods.Add(new MethodToken(modifiers, methodKind));
         }
         
         return methods;
