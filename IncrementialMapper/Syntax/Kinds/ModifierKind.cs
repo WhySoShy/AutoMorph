@@ -7,4 +7,5 @@ public enum ModifierKind
 {
     Static = 0,
     Partial = 1,
+    None = 3,
 }

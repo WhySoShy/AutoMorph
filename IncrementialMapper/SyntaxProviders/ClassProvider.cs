@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Linq;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
 using IncrementialMapper.SyntaxProviders.Enums;
@@ -14,13 +15,15 @@ internal static class ClassProvider
     {
         IndentedTextWriter writer = token.Writer;
 
-        string generatorClassName = $"GeneratedMapper_{token.SourceClass.Name}To{token.TargetClass.Name}";
+        string generatorClassName = token.Modifiers.Any(x => x is ModifierKind.Partial) ? $"{token.SourceClass.Name}" : $"GeneratedMapper_{token.SourceClass.Name}To{token.TargetClass.Name}";
         
         writer
             .Append(token.Visibility!.Value.ToReadAbleString() + " ")
             .AppendModifiers(token.Modifiers)
             .Append($"class {generatorClassName}").AppendLine()
             .AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendLine()
+                // Append all the methods, that should be generated inside the class scope.
+                .CreateMethods(token)
             .AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent).AppendLine();
         
         return token;

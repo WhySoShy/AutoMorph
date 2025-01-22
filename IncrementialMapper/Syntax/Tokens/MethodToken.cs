@@ -5,12 +5,18 @@ namespace IncrementialMapper.Syntax.Tokens;
 
 internal sealed record MethodToken(
         ModifierKind[] Modifiers,
-        MethodKind Type
+        MethodKind Type,
+        string Name
     )
 {
     /*
      * Properties will be found inside the parent ClassToken.
      */
+
+    /// <summary>
+    /// Name of the generated method.
+    /// </summary>
+    public string Name { get; } = Name;
     
     /// <summary>
     /// <para>

@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using IncrementialMapper.Syntax.Kinds;
@@ -9,8 +10,9 @@ namespace IncrementialMapper.Syntax.Tokens;
 internal sealed record ClassToken(
         ReferenceClassToken SourceClass,
         ReferenceClassToken TargetClass,
+        string Namespace,
         HashSet<ReferencePropertyToken> Properties,
-        HashSet<MethodToken> Methods,
+        List<MethodToken> Methods,
         VisibilityKind? Visibility,
         ModifierKind[] Modifiers
     )
@@ -24,6 +26,11 @@ internal sealed record ClassToken(
     /// What the generator should create the mappers to map to.
     /// </summary>
     public ReferenceClassToken TargetClass { get; } = TargetClass;
+    
+    /// <summary>
+    /// The namespace that the mapper should be generated into.
+    /// </summary>
+    public string Namespace { get; } = Namespace;
     
     /// <summary>
     /// Class visibility, this defaults to public if null.
@@ -52,7 +59,7 @@ internal sealed record ClassToken(
     ///     Contains what method types should be generated.
     /// </para>
     /// </summary>
-    public HashSet<MethodToken> Methods { get; } = Methods;
+    public List<MethodToken> Methods { get; } = Methods;
     
     /// <summary>
     /// Writer that is being used to generate each file.

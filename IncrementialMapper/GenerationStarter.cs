@@ -12,6 +12,8 @@ using IncrementialMapper.Attributes.Includes;
 using IncrementialMapper.SyntaxProviders;
 using IncrementialMapper.Utilities;
 using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
+// ReSharper disable InconsistentNaming
 
 namespace IncrementialMapper;
 
@@ -21,6 +23,7 @@ internal static class GenerationStarter
     /// Contains all the classes that already got a structure.
     /// </summary>
     private static readonly HashSet<string> _cachedClasses = new();
+    private const string DEFAULT_NAMESPACE = "IncrementialMapper.Generated.Mappers";
     
     public static void Begin(SourceProductionContext context, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> foundClasses, bool attachDebugger)
     {
@@ -53,14 +56,25 @@ internal static class GenerationStarter
                 continue;
             
             ModifierKind[] kinds = GetModifiers(currentClassSyntax, sourceSymbol);
-            HashSet<MethodToken> methods = GetMethods(sourceSymbol, kinds, targetSymbol.Name);
+            List<MethodToken> methods = GetMethods(sourceSymbol, kinds, targetSymbol.Name);
 
+            // Just reset the array, to only contain a static modifer if no method is marked as a partial class.
+            if (!methods.Any(x => x.Modifiers.Any(y => y is ModifierKind.Partial)))
+            {
+                kinds = [ModifierKind.Static];
+                methods = methods.Select(x => new MethodToken([ModifierKind.Static], x.Type, x.Name)).ToList();
+            }
+                
             if (!methods.Any())
                 continue;
+            
+            // Ensures that the generated partial class will use the same namespace as the source class.
+            string namespaceName = kinds.Any(x => x is ModifierKind.Partial) ? sourceSymbol.ContainingNamespace.ToDisplayString() : DEFAULT_NAMESPACE; 
             
             ClassToken token = new ClassToken(
                     SourceClass: sourceClass,
                     TargetClass: targetClass,
+                    Namespace: namespaceName,
                     Properties: validatedProperties,
                     Methods: methods,
                     Visibility: VisibilityKind.Public,
@@ -76,18 +90,14 @@ internal static class GenerationStarter
     static ModifierKind[] GetModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
     {
         List<ModifierKind> modifiers = [];
-
-        if (!sourceSymbol.ContainsAttribute<ExcludeAsStatic>())
-            modifiers.Add(ModifierKind.Static);
         
-        if (!modifiers.Any(x => x == ModifierKind.Static) && currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+        if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             modifiers.Add(ModifierKind.Partial);
         
-        // Ensure that it has at least one modifier.
-        if (!modifiers.Any())
+        if (!modifiers.Any(x => x is ModifierKind.Partial) && !sourceSymbol.ContainsAttribute<ExcludeAsStatic>())
             modifiers.Add(ModifierKind.Static);
         
-        return modifiers.ToArray();
+        return modifiers.OrderBy(x => x).ToArray();
     }
 
     static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass)
@@ -129,31 +139,38 @@ internal static class GenerationStarter
         return mappedProperties;
     }
 
-    static HashSet<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, ModifierKind[] classKinds, string targetClassName)
+    static List<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, ModifierKind[] classKinds, string targetClassName)
     {
-        HashSet<MethodToken> methods = [];
+        List<MethodToken> methods = [];
 
-        IEnumerable<(ISymbol symbol, bool isExternal)> availableMethods = [
-            .. sourceSymbol
-                .GetMembers()
-                // We only need to iterate on the Methods, nothing else.
-                .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
-                .Select(x => (x
-                    .GetAttributes()
-                    .FirstOrDefault(z => 
-                        ValidAttributes.ValidIncludeAttributes
-                            .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{z.AttributeClass!.Name}"))!
-                    .AttributeClass, true)
-                )!,
+        IEnumerable<(ISymbol symbol, bool isExternal, string methodName)> availableMethods = [
+            // Get the methods that have Included attributes on them and is Partial if the class is marked as partial.
+            // If the class has not been marked as partial, then it makes no sense to get methods that is maybe included.
+            .. (classKinds.Any(x => x == ModifierKind.Partial) ? 
+                sourceSymbol 
+                    .GetMembers()
+                    // We only need to iterate on the Methods, nothing else.
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<IncludeLinq>() || x.ContainsAttribute<IncludeIQueryable>())
+                    .Select(x => (x
+                        .GetAttributes()
+                        .FirstOrDefault(z => 
+                            ValidAttributes.ValidIncludeAttributes
+                                .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{z.AttributeClass!.Name}"))!
+                        .AttributeClass, true, x.Name)
+                    ) : []!)!,
+            
             .. sourceSymbol
                 .GetAttributes()
                 .Where(x => 
                     ValidAttributes.ValidIncludeAttributes
                         .Any(y => y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{x.AttributeClass!.Name}"))
-                .Select(y => (y.AttributeClass, false))!
+                .Select(y => (y.AttributeClass, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
         ];
+
+        // This is the default method name, that is being used when a method is not partial.
+        string defaultMethodName = $"MapTo{targetClassName}";
         
         // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in availableMethods)
@@ -169,10 +186,19 @@ internal static class GenerationStarter
 
             ModifierKind[] modifiers = new ModifierKind[1];
 
-            modifiers[0] = attribute.isExternal ? ModifierKind.Partial : ModifierKind.Static;
+            if (attribute.isExternal)
+                modifiers[0] = ModifierKind.Partial;
+            else if (classKinds.Any(x => x == ModifierKind.Static))
+                modifiers[0] = ModifierKind.Static;
+            else
+                modifiers[0] = ModifierKind.None;
             
-            methods.Add(new MethodToken(modifiers, methodKind));
+            methods.Add(new MethodToken(modifiers, methodKind, attribute.isExternal ? attribute.methodName : defaultMethodName));
         }
+        
+        // Always include the standard mapper unless the user has explicitly told not to.
+        if (!sourceSymbol.ContainsAttribute<ExcludeStandard>())
+            methods.Add(new MethodToken([classKinds.Any(x => x is ModifierKind.Static) ? ModifierKind.Static : ModifierKind.None], MethodKind.Standard, defaultMethodName));
         
         return methods;
     }

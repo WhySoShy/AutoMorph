@@ -8,13 +8,14 @@ namespace IncrementialMapper.Test.Examples;
 [SGMapper(typeof(PartialExample1Target))]
 // This Auto-Includes the Linq  mapper, with a name given by the generator.
 [IncludeLinq] 
+[IncludeIQueryable]
 // This could be an DTO for example.
 public partial class PartialExample1
 {
     // This is a way to specify the method, if you want to customize the names of the mapper. And gives more control for it.
     // But make sure that the return types match.
     [IncludeIQueryable]
-    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target();
+    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target(IQueryable<PartialExample1> source);
 
     // This specifically targets the property PropTarget1 of class PartialExample1Target.
     [SGProperty(nameof(PartialExample1Target.PropTarget1))]
@@ -28,13 +29,16 @@ public partial class PartialExample1
     public string PropTarget3 { get; set; } = string.Empty;
 }
 
-public partial class PartialExample1
-{
-    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target()
-    {
-        throw new NotImplementedException();
-    }
-}
+// public partial class PartialExample1
+// {
+//     [SGProperty(nameof(PartialExample1Target.PropTarget3))]
+//     public string H { get; set; } = string.Empty;
+//     
+//     public partial IQueryable<PartialExample1Target> MapToPartialExample1Target(IQueryable<PartialExample1> source)
+//     {
+//         throw new NotImplementedException();
+//     }
+// }
 
 
 // This could be an DB Entity for example.
