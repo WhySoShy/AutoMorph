@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
@@ -29,7 +30,7 @@ internal static class ClassProvider
         return token;
     }
 
-    private static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, ModifierKind[] modifiers)
+    private static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, List<ModifierKind> modifiers)
     {
         foreach (ModifierKind modifier in modifiers)
             writer.Append(modifier.ToReadableString() + " ");

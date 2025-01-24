@@ -6,36 +6,36 @@ using System.Linq;
 using IncrementialMapper.Syntax.Kinds;
 
 namespace IncrementialMapper.Syntax.Tokens;
-
-internal sealed record ClassToken(
-        ReferenceClassToken SourceClass,
-        ReferenceClassToken TargetClass,
-        string Namespace,
-        HashSet<ReferencePropertyToken> Properties,
-        List<MethodToken> Methods,
-        VisibilityKind? Visibility,
-        ModifierKind[] Modifiers
-    )
+// (
+//     ReferenceClassToken SourceClass,
+//     ReferenceClassToken TargetClass,
+//     string Namespace,
+//     HashSet<ReferencePropertyToken> Properties,
+//     List<MethodToken> Methods,
+//     VisibilityKind? Visibility,
+//     ModifierKind[] Modifiers
+// )
+internal sealed record ClassToken
 {
     /// <summary>
     /// What the generator should create the mappers to map from.
     /// </summary>
-    public ReferenceClassToken SourceClass { get; } = SourceClass;
+    public ReferenceClassToken SourceClass { get; set; }
     
     /// <summary>
     /// What the generator should create the mappers to map to.
     /// </summary>
-    public ReferenceClassToken TargetClass { get; } = TargetClass;
+    public ReferenceClassToken TargetClass { get; set; }
     
     /// <summary>
     /// The namespace that the mapper should be generated into.
     /// </summary>
-    public string Namespace { get; } = Namespace;
+    public string? Namespace { get; set; }
     
     /// <summary>
     /// Class visibility, this defaults to public if null.
     /// </summary>
-    public VisibilityKind? Visibility { get; } = Visibility ?? VisibilityKind.Public;
+    public VisibilityKind? Visibility { get; set; }
 
     /// <summary>
     /// <para>
@@ -44,7 +44,7 @@ internal sealed record ClassToken(
     ///     this just means that it appears in the correct order when assembling the code. 
     /// </para>
     /// </summary>
-    public ModifierKind[] Modifiers { get; } = Modifiers.OrderBy(x => x).ToArray();
+    public List<ModifierKind> Modifiers { get; set; } = [];
 
     /// <summary>
     /// <para>
@@ -52,14 +52,14 @@ internal sealed record ClassToken(
     ///     This is being used by all the methods.
     /// </para>
     /// </summary>
-    public HashSet<ReferencePropertyToken> Properties { get; } = Properties;
-    
+    public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
+
     /// <summary>
     /// <para>
     ///     Contains what method types should be generated.
     /// </para>
     /// </summary>
-    public List<MethodToken> Methods { get; } = Methods;
+    public List<MethodToken> Methods { get; set; } = [];
     
     /// <summary>
     /// Writer that is being used to generate each file.
