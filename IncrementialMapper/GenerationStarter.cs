@@ -57,14 +57,7 @@ internal static class GenerationStarter
             
             ModifierKind[] kinds = GetModifiers(currentClassSyntax, sourceSymbol);
             List<MethodToken> methods = GetMethods(sourceSymbol, kinds, targetSymbol.Name);
-
-            // Just reset the array, to only contain a static modifer if no method is marked as a partial class.
-            if (!methods.Any(x => x.Modifiers.Any(y => y is ModifierKind.Partial)))
-            {
-                kinds = [ModifierKind.Static];
-                methods = methods.Select(x => new MethodToken([ModifierKind.Static], x.Type, x.Name)).ToList();
-            }
-                
+            
             if (!methods.Any())
                 continue;
             
@@ -90,11 +83,15 @@ internal static class GenerationStarter
     static ModifierKind[] GetModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
     {
         List<ModifierKind> modifiers = [];
+
+        // Force the generated class, to be created as a static class.
+        if (sourceSymbol.ContainsAttribute<MarkAsStatic>())
+            return [ModifierKind.Static];
         
         if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             modifiers.Add(ModifierKind.Partial);
         
-        if (!modifiers.Any(x => x is ModifierKind.Partial) && !sourceSymbol.ContainsAttribute<ExcludeAsStatic>())
+        if (!modifiers.Any(x => x == ModifierKind.Partial))
             modifiers.Add(ModifierKind.Static);
         
         return modifiers.OrderBy(x => x).ToArray();

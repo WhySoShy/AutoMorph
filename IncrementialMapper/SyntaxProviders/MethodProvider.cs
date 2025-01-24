@@ -13,35 +13,44 @@ internal static class MethodProvider
     
     public static IndentedTextWriter CreateMethods(this IndentedTextWriter writer, ClassToken classToken)
     {
-        foreach(MethodToken method in classToken.Methods)
+        int methodCount = 0;
+        foreach (MethodToken method in classToken.Methods)
+        {
             GenerateMethod(method, classToken);
+
+            if (classToken.Methods.Count < methodCount)
+                continue;
+            
+            methodCount++;
+            writer.AppendLine();
+        }
 
         return writer;
     }
 
-    public static void GenerateMethod(MethodToken token, ClassToken classToken)
+    private static void GenerateMethod(MethodToken token, ClassToken classToken)
     {
         IndentedTextWriter writer = classToken.Writer;
 
-        var text = (token.Modifiers[0] is ModifierKind.None ? null : token.Modifiers[0].GetModifierAsString())!;
-        var asd = classToken.Modifiers.Any(x => x is ModifierKind.Static) ? "this " : null!;
+        string methodModifier = token.Modifiers[0] is ModifierKind.None ? string.Empty : token.Modifiers[0].GetModifierAsString() + " ";
+        string parameterKeyword = classToken.Modifiers.Any(x => x is ModifierKind.Static) ? "this " : string.Empty;
         
         writer
-            .Append($"{classToken.Visibility!.Value.ToReadAbleString()} {(token.Modifiers[0] is ModifierKind.None ? null : token.Modifiers[0].GetModifierAsString())!} ")
+            .Append($"{classToken.Visibility!.Value.ToReadAbleString()} {methodModifier}")
             .Append(token.GetMethodTypeAsString(classToken.TargetClass) + " " + token.Name)
             .AppendFormat(FormatType.OpenParentheses, IndentType.Passive)
-                .Append(classToken.Modifiers.Any(x => x is ModifierKind.Static) ? "this " : null!)
+                .Append(parameterKeyword)
                 .Append($"{token.GetMethodTypeAsString(classToken.SourceClass)} {PARAMETER_NAME}")
             .AppendFormat(FormatType.ClosedParentheses, IndentType.Passive)
             .AppendLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendLine()
                 .AppendReturn(token, classToken)
-            .AppendLine().AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent).AppendLine(2);
+            .AppendLine().AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent).AppendLine();
     }
 
     /// <summary>
     /// Appends the return type of <see cref="MethodKind"/>
     /// </summary>
-    public static IndentedTextWriter AppendReturn(this IndentedTextWriter writer, MethodToken currentMethod, ClassToken token)
+    private static IndentedTextWriter AppendReturn(this IndentedTextWriter writer, MethodToken currentMethod, ClassToken token)
     {
         // This is the reference used, to map from the source class to the target class.
         // This will always be either x or source, depending on the return type.
@@ -76,7 +85,7 @@ internal static class MethodProvider
         return writer;
     }
 
-    public static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, ClassToken token)
+    private static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, ClassToken token)
     {
         int count = 0;
         foreach (ReferencePropertyToken property in token.Properties)

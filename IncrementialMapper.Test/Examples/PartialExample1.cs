@@ -4,47 +4,20 @@ using IncrementialMapper.Attributes.Includes;
 
 namespace IncrementialMapper.Test.Examples;
 
-// Define what class you want to map to.
-[SGMapper(typeof(PartialExample1Target))]
-// This Auto-Includes the Linq  mapper, with a name given by the generator.
-[IncludeLinq] 
-[IncludeIQueryable]
-// This could be an DTO for example.
-public partial class PartialExample1
+[SGMapper(typeof(ExampleTarget))]
+[IncludeLinq]
+[MarkAsStatic]
+public partial class Example
 {
-    // This is a way to specify the method, if you want to customize the names of the mapper. And gives more control for it.
-    // But make sure that the return types match.
-    [IncludeIQueryable]
-    public partial IQueryable<PartialExample1Target> MapToPartialExample1Target(IQueryable<PartialExample1> source);
-
-    // This specifically targets the property PropTarget1 of class PartialExample1Target.
-    [SGProperty(nameof(PartialExample1Target.PropTarget1))]
-    public string Prop1 { get; set; } = string.Empty;
+    public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello
     
-    // This auto targets PropTarget2 of class PartialExample1Target, because they share the same name.
-    public string PropTarget2 { get; set; } = string.Empty;
-    
-    // Even though PartialExample1Target, contains a property name PropTarget3 it will not be included because it has been marked as excluded.
-    [ExcludeProperty]
-    public string PropTarget3 { get; set; } = string.Empty;
+    [SGProperty(nameof(ExampleTarget.RandomName))]
+    public string NotFoundName { get; set; } // This targets the ExampleTarget.RandomName because of the attached attribute.
 }
 
-// public partial class PartialExample1
-// {
-//     [SGProperty(nameof(PartialExample1Target.PropTarget3))]
-//     public string H { get; set; } = string.Empty;
-//     
-//     public partial IQueryable<PartialExample1Target> MapToPartialExample1Target(IQueryable<PartialExample1> source)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }
-
-
-// This could be an DB Entity for example.
-public class PartialExample1Target
+public class ExampleTarget
 {
-    public string PropTarget1 { get; set; } = string.Empty;
-    public string PropTarget2 { get; set; } = string.Empty;
-    public string PropTarget3 { get; set; } = string.Empty;
+    public string Hello { get; set; } // This will be mapped to Example.Hello
+    
+    public string RandomName { get; set; } // This will be mapped to Example.NotFoundName
 }
