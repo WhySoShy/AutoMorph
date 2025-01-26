@@ -5,23 +5,16 @@ using IncrementialMapper.Attributes;
 using IncrementialMapper.Attributes.Excludes;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
+using IncrementialMapper.Utilities;
 using Microsoft.CodeAnalysis;
+using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace IncrementialMapper.GeneratorHelpers;
 
 public static class PropertyHelper
-{
-    private static HashSet<string> _allowedCollectionInterfaces = 
-    [
-        "System.Collections.IEnumerable",
-        "System.Collections.IList",
-        "System.Collections.ICollection",
-        "System.Collections.Generic.IEnumerable<T>",
-        "System.Collections.Generic.ICollection<T>",
-        "System.Collections.Generic.IList<T>"
-    ];
-    
-    internal static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass)
+{  
+    internal static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, out HashSet<string> newNamespaces)
     {
         List<IPropertySymbol> sourceProperties = sourceClass
             .GetMembers()
@@ -32,6 +25,8 @@ public static class PropertyHelper
             )
             .Select(x => (x as IPropertySymbol)!)
             .ToList() ?? [];
+
+        newNamespaces = [];
 
         if (!sourceProperties.Any())
             return [];
@@ -54,15 +49,15 @@ public static class PropertyHelper
             if (foundTargetProperty is null || foundTargetProperty.ContainsAttribute<ExcludeProperty>() || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
                 continue;
 
-            PropertyKind propertyKind = property.Type.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Array && property.Type.SpecialType is SpecialType.None ? PropertyKind.Object : PropertyKind.Primitive;
+            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.Name, foundTargetProperty.Name);
 
-            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.Name, foundTargetProperty.Name)
-            {
-                SourcePropertyType = propertyKind
-            };
+            newlyMappedProperty.NestedObject = GetNestedPropertyTokens(property, out string? newNamespace);
+
+            if (newNamespace is not null)
+                newNamespaces.Add(newNamespace);
             
-            // Get the properties of the object, that has been created, this should probably be created with a standalone extension method so it will be more readable.
-            newlyMappedProperty.NestedObjectMapperMethod = GetNestedPropertyTokens(property, foundTargetProperty, newlyMappedProperty);
+            // If the property is not an object or collection, then it shouldn't initialize with the NestedObject information. 
+            // newlyMappedProperty ??= new ReferencePropertyToken(property.Name, foundTargetProperty.Name);
 
             mappedProperties.Add(newlyMappedProperty);
             // Remove it from the list, because it should only be added once.
@@ -72,22 +67,58 @@ public static class PropertyHelper
         return mappedProperties;
     }
 
-    private static string? GetNestedPropertyTokens(IPropertySymbol sourceProperty, IPropertySymbol targetProperty, ReferencePropertyToken token)
+    private static ReferencePropertyToken.NestedObjectToken? GetNestedPropertyTokens(IPropertySymbol sourceProperty, out string? newNamespace)
     {
-        if (token.SourcePropertyType is not PropertyKind.Object)
+        newNamespace = null;
+
+        // Just return an empty object, if it is not an object or collection.
+        if (!(sourceProperty.Type.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Array &&
+              sourceProperty.Type.SpecialType is SpecialType.None))
             return null;
-
-        INamedTypeSymbol? targetSymbolType = null;
         
-        if (sourceProperty.Type.AllInterfaces.FirstOrDefault(x => _allowedCollectionInterfaces.Contains(x.OriginalDefinition.ToDisplayString()) && x.IsGenericType) is { } foundInterface)
-        {
-            token.SourcePropertyType = PropertyKind.Collection;
+        string name = sourceProperty.Type is IArrayTypeSymbol ? CollectionCasting.ARRAY_CUSTOM : sourceProperty.Type.OriginalDefinition.ToDisplayString();
 
-            targetSymbolType = foundInterface.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
-        }
+        if (CollectionCasting.SupportedCollections.FirstOrDefault(x
+                    => x.Key == name) is
+                { Key: not null } foundCollection)
+            return HandleCollection(sourceProperty, foundCollection, out newNamespace);
 
-        ClassToken? generatedClass = ClassHelper.GenerateClassToken(targetSymbolType, null);
+        return HandleObject(sourceProperty, out newNamespace);
+    }
 
-        throw new NotImplementedException();
+    private static ReferencePropertyToken.NestedObjectToken? HandleCollection(IPropertySymbol sourceProperty, KeyValuePair<string, Func<ReferencePropertyToken, string, string>> allowedCollection, out string? newNamespace)
+    {
+        // Get the TypeSymbol from the source's Type argument.
+        // Right now I don't have a way to secure that I get the correct TypeSymbol, so this is the way to go
+        INamedTypeSymbol? targetAsINamedTypeSymbol = sourceProperty.Type.AllInterfaces.FirstOrDefault(x => x.TypeArguments.Any())?.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
+        
+        ClassToken? classToken = ClassHelper.GenerateClassToken(targetAsINamedTypeSymbol, null);
+        
+        // If it could not find a suitable MethodToken, then it should just default to IEnumerable.
+        MethodToken? methodToken = classToken is null ? null : classToken.Methods.FirstOrDefault(x => x.GetVariableSourceName().Equals(allowedCollection.Key)) ?? 
+                                                               classToken.Methods.FirstOrDefault(x => x.Type is MethodKind.Linq);
+
+        if (methodToken is not null && classToken is not null)
+            newNamespace = classToken.Namespace;
+        else
+            newNamespace = null;
+
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, allowedCollection, PropertyTypeKind.Collection);
+    }
+
+    private static ReferencePropertyToken.NestedObjectToken? HandleObject(IPropertySymbol sourceProperty, out string? newNamespace)
+    {
+        ClassToken? classToken = ClassHelper.GenerateClassToken(sourceProperty.Type as INamedTypeSymbol, null);
+
+        MethodToken? methodToken = classToken?.Methods.FirstOrDefault(x => x.Type is MethodKind.Standard);
+
+        if (methodToken is not null && classToken is not null)
+            newNamespace = classToken.Namespace;
+        else
+            newNamespace = null;
+
+        string ObjectMapping(ReferencePropertyToken token, string sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}()";
+
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, new KeyValuePair<string, Func<ReferencePropertyToken, string, string>>(string.Empty, ObjectMapping), PropertyTypeKind.Object);
     }
 }

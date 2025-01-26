@@ -1,37 +1,27 @@
-﻿using System.CodeDom.Compiler;
+﻿using IncrementialMapper.Syntax.Kinds;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using IncrementialMapper.Syntax.Kinds;
 
 namespace IncrementialMapper.Syntax.Tokens;
-// (
-//     ReferenceClassToken SourceClass,
-//     ReferenceClassToken TargetClass,
-//     string Namespace,
-//     HashSet<ReferencePropertyToken> Properties,
-//     List<MethodToken> Methods,
-//     VisibilityKind? Visibility,
-//     ModifierKind[] Modifiers
-// )
+
 internal sealed record ClassToken
 {
     /// <summary>
     /// What the generator should create the mappers to map from.
     /// </summary>
     public ReferenceClassToken SourceClass { get; set; }
-    
+
     /// <summary>
     /// What the generator should create the mappers to map to.
     /// </summary>
     public ReferenceClassToken TargetClass { get; set; }
-    
+
     /// <summary>
     /// The namespace that the mapper should be generated into.
     /// </summary>
     public string? Namespace { get; set; }
-    
+
     /// <summary>
     /// Class visibility, this defaults to public if null.
     /// </summary>
@@ -60,7 +50,12 @@ internal sealed record ClassToken
     /// </para>
     /// </summary>
     public List<MethodToken> Methods { get; set; } = [];
-    
+
+    /// <summary>
+    /// Namespaces that the class needs to function.
+    /// </summary>
+    public HashSet<string> NameSpaces { get; set; } = [];
+
     /// <summary>
     /// Writer that is being used to generate each file.
     /// </summary>

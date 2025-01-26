@@ -18,8 +18,6 @@ internal sealed record MethodToken(
     /// </summary>
     public string Name { get; } = Name;
     
-    public string? DataType { get; set; }
-    
     /// <summary>
     /// <para>
     ///     Modifiers that should be added to the method. <br />

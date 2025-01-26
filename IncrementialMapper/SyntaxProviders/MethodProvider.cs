@@ -91,8 +91,28 @@ internal static class MethodProvider
         foreach (ReferencePropertyToken property in token.Properties)
         {
             count++;
-            writer
-                .Append($"{property.TargetPropertyName} = {sourceReference}.{property.SourcePropertyName}");
+
+            writer.Append($"{property.TargetPropertyName} = ");
+
+            if (property.NestedObject is not null)
+            {
+                writer.Append(property.NestedObject.Type.Value.Invoke(property, sourceReference));
+                // switch (property.NestedObject.Kind)
+                // {
+                //     case PropertyTypeKind.Collection:
+                //         writer.Append(property.NestedObject.Type.Value.Invoke(property, sourceReference));
+                //         break;
+                //     case PropertyTypeKind.Object:
+                //         writer.Append(property.Nested);
+                //         break;
+                // }
+            }
+            else
+                writer.Append($"{sourceReference}.{property.SourcePropertyName}");
+            
+            // writer.Append(property.NestedObject?.MethodToken.Name is not null
+            //     ? $"{property.TargetPropertyName} = {sourceReference}.{property.SourcePropertyName}.{property.NestedObject?.MethodToken.Name}()"
+            //     : $"{property.TargetPropertyName} = {sourceReference}.{property.SourcePropertyName}");
 
             if (count < token.Properties.Count)
                 writer

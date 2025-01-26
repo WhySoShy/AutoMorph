@@ -10,8 +10,6 @@ namespace IncrementialMapper.SyntaxProviders;
 
 internal static class ClassProvider
 {
-    private const string VISIBILITY_TYPE = "public";
-    
     public static ClassToken CreateSourceClass(this ClassToken token)
     {
         IndentedTextWriter writer = token.Writer;

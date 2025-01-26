@@ -17,7 +17,7 @@ internal static class ClassHelper
     /// <summary>
     /// Contains all the classes that already got a structure.
     /// </summary>
-    private static HashSet<ClassToken> _cachedClasses = new();
+    internal static readonly HashSet<ClassToken> CachedClasses = new();
     
     internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol, TypeDeclarationSyntax? classDeclarationSyntax)
     {
@@ -33,19 +33,26 @@ internal static class ClassHelper
         ClassToken generatedToken = new ()
         {
             SourceClass = sourceSymbol.TransformClass(),
-            TargetClass = targetSymbol.TransformClass()
+            TargetClass = targetSymbol.TransformClass(),
+            Visibility = VisibilityKind.Public // This could technically change if the class was a partial class.
         };
-        
+
+        bool cachedClassWasFound = false;
         // If the source and target class already has been through this, then it should reuse the same data.
-        if (_cachedClasses.FirstOrDefault(x => x.SourceClass.FullPath == generatedToken.SourceClass.FullPath && x.TargetClass.FullPath == generatedToken.TargetClass.FullPath) is { } cachedToken)
+        if (CachedClasses.FirstOrDefault(x => x.SourceClass.FullPath == generatedToken.SourceClass.FullPath && x.TargetClass.FullPath == generatedToken.TargetClass.FullPath) is { } cachedToken)
         {
             generatedToken = cachedToken;
+            cachedClassWasFound = true;
         }
+
+        // Namespaces that are needed for the mapper to function.
+        HashSet<string> newNamespaces = [];
         
         // TODO: Display a warning with a analyzer, if the class does not contain any properties.
         if (!generatedToken.Properties.Any())
-            generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, targetSymbol);
-            
+        {
+            generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, targetSymbol, out newNamespaces);
+        }
         if (!generatedToken.Properties.Any())
             return null;
 
@@ -67,8 +74,12 @@ internal static class ClassHelper
             
         // Ensures that the generated partial class will use the same namespace as the source class. 
         generatedToken.Namespace ??= generatedToken.Modifiers.Any(x => x is ModifierKind.Partial) ? sourceSymbol.ContainingNamespace.ToDisplayString() : DEFAULT_NAMESPACE;
+
+        // Remove the unnecessary namespaces, we don't want to include namespaces that are the same as our own.
+        generatedToken.NameSpaces = [.. newNamespaces.Where(x => x != generatedToken.Namespace)];
         
-        _cachedClasses.Add(generatedToken);
+        if (!cachedClassWasFound)
+            CachedClasses.Add(generatedToken);
 
         return generatedToken;
     }
@@ -84,7 +95,7 @@ internal static class ClassHelper
         if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             modifiers.Add(ModifierKind.Partial);
         
-        if (!modifiers.Any(x => x == ModifierKind.Partial)!)
+        if (!modifiers.Any(x => x == ModifierKind.Partial))
             modifiers.Add(ModifierKind.Static);
         
         return modifiers.OrderBy(x => x).ToList();
