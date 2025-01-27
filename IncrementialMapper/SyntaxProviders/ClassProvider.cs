@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
@@ -9,8 +10,6 @@ namespace IncrementialMapper.SyntaxProviders;
 
 internal static class ClassProvider
 {
-    private const string VISIBILITY_TYPE = "public";
-    
     public static ClassToken CreateSourceClass(this ClassToken token)
     {
         IndentedTextWriter writer = token.Writer;
@@ -29,7 +28,7 @@ internal static class ClassProvider
         return token;
     }
 
-    private static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, ModifierKind[] modifiers)
+    private static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, List<ModifierKind> modifiers)
     {
         foreach (ModifierKind modifier in modifiers)
             writer.Append(modifier.ToReadableString() + " ");
