@@ -92,7 +92,7 @@ public static class PropertyHelper
         // Right now I don't have a way to secure that I get the correct TypeSymbol, so this is the way to go
         INamedTypeSymbol? targetAsINamedTypeSymbol = sourceProperty.Type.AllInterfaces.FirstOrDefault(x => x.TypeArguments.Any())?.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
         
-        ClassToken? classToken = ClassHelper.GenerateClassToken(targetAsINamedTypeSymbol, null);
+        ClassToken? classToken = ClassHelper.GenerateClassToken(targetAsINamedTypeSymbol);
         
         // If it could not find a suitable MethodToken, then it should just default to IEnumerable.
         MethodToken? methodToken = classToken is null ? null : classToken.Methods.FirstOrDefault(x => x.GetVariableSourceName().Equals(allowedCollection.Key)) ?? 
@@ -108,7 +108,7 @@ public static class PropertyHelper
 
     private static ReferencePropertyToken.NestedObjectToken? HandleObject(IPropertySymbol sourceProperty, out string? newNamespace)
     {
-        ClassToken? classToken = ClassHelper.GenerateClassToken(sourceProperty.Type as INamedTypeSymbol, null);
+        ClassToken? classToken = ClassHelper.GenerateClassToken(sourceProperty.Type as INamedTypeSymbol);
 
         MethodToken? methodToken = classToken?.Methods.FirstOrDefault(x => x.Type is MethodKind.Standard);
 

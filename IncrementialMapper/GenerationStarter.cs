@@ -11,27 +11,21 @@ namespace IncrementialMapper;
 
 internal static class GenerationStarter
 {
-    public static void Begin(SourceProductionContext context, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> foundClasses, bool attachDebugger)
+    public static void Begin(SourceProductionContext context, ImmutableArray<INamedTypeSymbol> foundClasses, bool attachDebugger)
     {
         if (!Debugger.IsAttached && attachDebugger)
             Debugger.Launch();
-        
+
         if (!foundClasses.Any())
             return;
 
-        foreach (TypeDeclarationSyntax currentClassSyntax in foundClasses)
-        {
-            // It should only continue if it can be parsed as a INamedTypeSymbol
-            if (compilation.GetSemanticModel(currentClassSyntax.SyntaxTree).GetDeclaredSymbol(currentClassSyntax) is not INamedTypeSymbol sourceSymbol)
-                continue;
-
-            ClassToken? generatedToken = ClassHelper.GenerateClassToken(sourceSymbol, currentClassSyntax);
-        }
-
+        foreach (INamedTypeSymbol currentClass in foundClasses)
+            ClassHelper.GenerateClassToken(currentClass);
+        
         foreach (ClassToken token in ClassHelper.CachedClasses)
             SourceGenerator.GenerateCode(token, context);
         
-        // The classes are being "reused", and I want to take advantage of this, though i am not now. Therefor i just remove the errors by clearing the Cache.
+        // The classes are being "reused", and I want to take advantage of this, though I am not now. Therefor I just remove the errors by clearing the Cache.
         ClassHelper.CachedClasses.Clear();
     }
 }

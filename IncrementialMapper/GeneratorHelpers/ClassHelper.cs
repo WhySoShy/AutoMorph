@@ -19,7 +19,7 @@ internal static class ClassHelper
     /// </summary>
     internal static readonly HashSet<ClassToken> CachedClasses = new();
     
-    internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol, TypeDeclarationSyntax? classDeclarationSyntax)
+    internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol)
     {
         if (sourceSymbol is null)
             return null;
@@ -50,17 +50,15 @@ internal static class ClassHelper
         
         // TODO: Display a warning with a analyzer, if the class does not contain any properties.
         if (!generatedToken.Properties.Any())
-        {
             generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, targetSymbol, out newNamespaces);
-        }
+
         if (!generatedToken.Properties.Any())
             return null;
 
         // Ensure that there always exists a type declaration of the source.
         // This is used to check if a class is marked as a partial class or not.
-        classDeclarationSyntax ??= sourceSymbol.DeclaringSyntaxReferences.FirstOrDefault()!.GetSyntax() as TypeDeclarationSyntax;
 
-        if (classDeclarationSyntax is null)
+        if (sourceSymbol.DeclaringSyntaxReferences.FirstOrDefault()!.GetSyntax() is not TypeDeclarationSyntax classDeclarationSyntax)
             return null;
             
         if (!generatedToken.Modifiers.Any())

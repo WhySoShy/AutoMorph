@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using IncrementialMapper.Attributes;
+using IncrementialMapper.Constants;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace IncrementialMapper;
@@ -8,14 +11,20 @@ public class MapperGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var provider = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: static (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
-            transform: static (ctx, _) => ctx.Node as TypeDeclarationSyntax
+        ConfigureGenerator(context);
+    }
+
+    private void ConfigureGenerator(IncrementalGeneratorInitializationContext context)
+    {
+        // Use ForAttributeWithMetadataName instead of CreateSyntaxProvider for better performance.
+        // Reference: https://github.com/dotnet/roslyn/blob/main/docs/features/incremental-generators.cookbook.md#use-forattributewithmetadataname
+        var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            AssemblyConstants.SGMAPPER_FULL_QUALIFIED_METADATA_NAME,
+            static (syntaxNode, _) =>
+                syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
+            static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol
         ).Where(static node => node is not null);
-
-        var compilation = context.CompilationProvider.Combine(provider.Collect());
-
-        // When the time is right, register the source outputter here.
-        context.RegisterSourceOutput(compilation, (spc, source) => GenerationStarter.Begin(spc, source.Left, source!.Right!, attachDebugger: false));
+        
+        context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()), (spc, source) => GenerationStarter.Begin(spc, source!.Right!, attachDebugger: false));
     }
 }

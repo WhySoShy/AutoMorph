@@ -4,7 +4,7 @@
 // using System.Collections.Immutable;
 // using System.Reflection;
 // using IncrementialMapper.Test.Examples;
-//
+
 // Console.WriteLine("Hello, World!");
 //
 // List<NestedObject> ienumerable = new List<NestedObject>()
