@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using IncrementialMapper.Attributes.Base;
+using IncrementialMapper.Abstractions.Base;
 
-namespace IncrementialMapper.Attributes.Includes;
+namespace IncrementialMapper.Abstractions;
 
 /// <summary>
 /// <para>
@@ -11,5 +11,4 @@ namespace IncrementialMapper.Attributes.Includes;
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method)]
-[Conditional("EXCLUDE_RUNTIME")]
 public class IncludeIQueryable(string? key = null) : BaseAttribute(key);

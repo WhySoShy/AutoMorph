@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Attributes.Excludes;
-using IncrementialMapper.Attributes.Includes;
+using IncrementialMapper.Abstractions;
 using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;

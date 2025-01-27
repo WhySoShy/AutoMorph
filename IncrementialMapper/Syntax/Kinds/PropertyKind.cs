@@ -3,7 +3,10 @@
 
 public enum PropertyKind
 {
-    Object,
-    Primitive,
-    Collection
+    None = 0,
+    /// <summary>
+    /// See supported collections in <see cref="CollectionCasting.SupportedCollections"/>
+    /// </summary>
+    Collection = 1,
+    Object = 2,
 }

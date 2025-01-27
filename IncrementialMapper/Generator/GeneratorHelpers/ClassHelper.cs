@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Attributes;
-using IncrementialMapper.Attributes.Includes;
+using IncrementialMapper.Abstractions;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
 using Microsoft.CodeAnalysis;

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using IncrementialMapper.Constants;
 
-namespace IncrementialMapper.Attributes.Base;
+namespace IncrementialMapper.Abstractions.Base;
 
 /// <summary>
 /// A base class that the attributes use to define a key.

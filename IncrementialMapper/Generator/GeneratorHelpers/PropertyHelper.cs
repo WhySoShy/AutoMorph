@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Attributes;
-using IncrementialMapper.Attributes.Excludes;
+using IncrementialMapper.Abstractions;
 using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
@@ -103,7 +102,7 @@ public static class PropertyHelper
         else
             newNamespace = null;
 
-        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, allowedCollection, PropertyTypeKind.Collection);
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, allowedCollection, PropertyKind.Collection);
     }
 
     private static ReferencePropertyToken.NestedObjectToken? HandleObject(IPropertySymbol sourceProperty, out string? newNamespace)
@@ -119,6 +118,6 @@ public static class PropertyHelper
 
         string ObjectMapping(ReferencePropertyToken token, string sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}()";
 
-        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, new KeyValuePair<string, Func<ReferencePropertyToken, string, string>>(string.Empty, ObjectMapping), PropertyTypeKind.Object);
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, new KeyValuePair<string, Func<ReferencePropertyToken, string, string>>(string.Empty, ObjectMapping), PropertyKind.Object);
     }
 }

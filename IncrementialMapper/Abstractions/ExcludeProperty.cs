@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using IncrementialMapper.Attributes.Base;
+using IncrementialMapper.Abstractions.Base;
 
-namespace IncrementialMapper.Attributes.Excludes;
+namespace IncrementialMapper.Abstractions;
 
 [AttributeUsage(AttributeTargets.Property)]
-[Conditional("EXCLUDE_RUNTIME")]
 public class ExcludeProperty(string? key = null) : BaseAttribute(key);

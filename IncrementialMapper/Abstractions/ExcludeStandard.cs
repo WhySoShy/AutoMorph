@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using IncrementialMapper.Attributes.Base;
+using IncrementialMapper.Abstractions.Base;
 
-namespace IncrementialMapper.Attributes.Excludes;
+namespace IncrementialMapper.Abstractions;
 
 /// <summary>
 /// When this has been added on a class, struct or record it tells the SG to exclude the standard object-object mapper.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-[Conditional("EXCLUDE_RUNTIME")]
 public class ExcludeStandard(string? key = null) : BaseAttribute(key);

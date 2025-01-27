@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using IncrementialMapper.Attributes.Base;
-using IncrementialMapper.Constants;
+using IncrementialMapper.Abstractions.Base;
 
-namespace IncrementialMapper.Attributes.Includes;
+namespace IncrementialMapper.Abstractions;
 
 /// <summary>
 /// <para>

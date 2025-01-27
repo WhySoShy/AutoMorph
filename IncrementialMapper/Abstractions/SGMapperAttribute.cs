@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace IncrementialMapper.Attributes;
+namespace IncrementialMapper.Abstractions;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 [Conditional("EXCLUDE_RUNTIME")]

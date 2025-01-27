@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using IncrementialMapper.Attributes.Includes;
+using IncrementialMapper.Abstractions;
 using IncrementialMapper.Syntax.Kinds;
 
 namespace IncrementialMapper.Generator.Utilities;

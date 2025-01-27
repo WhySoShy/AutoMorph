@@ -17,7 +17,7 @@ internal record ReferencePropertyToken(
     /// </summary>
     public NestedObjectToken? NestedObject { get; set; }
     
-    internal record NestedObjectToken(MethodToken MethodToken, KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type, PropertyTypeKind Kind)
+    internal record NestedObjectToken(MethodToken MethodToken, KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type, PropertyKind Kind)
     {
         public MethodToken MethodToken { get; } = MethodToken;
 
@@ -26,6 +26,6 @@ internal record ReferencePropertyToken(
         /// </summary>
         public KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type { get; } = Type;
 
-        public PropertyTypeKind Kind { get; } = Kind;
+        public PropertyKind Kind { get; } = Kind;
     }
 }

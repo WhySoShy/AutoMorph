@@ -4,22 +4,6 @@
 - > Properties can map into other properties with different names
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
-  
-### Supported Collections
-- IQueryable
-- IEnumerable
-- Queue
-- Stack
-- List
-- HashSet
-- LinkedList
-- ConcurrentQueue
-- BlockingCollection
-- ConcurrentBag
-- ImmutableList
-- ImmutableQueue
-- ImmutableStack
-- ImmutableSortedSet
 
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor
@@ -41,7 +25,7 @@
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
 - [ ] Allow the user to set custom names for the mappers through the `SGMapper` attribute
 - [ ] Allow mapping from between property types,
-- [ ] Allow `MarkAsStatic` attribute to be appended on methods, to allow static methods
+- [ ] Allow `MarkAsStatic` attribute to be appended on partial methods, to allow static methods
 
 ### Attribute Ideas:
 - [ ] Order nested collections
