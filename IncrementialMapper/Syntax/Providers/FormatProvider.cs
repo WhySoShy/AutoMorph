@@ -1,7 +1,7 @@
 ﻿using System.CodeDom.Compiler;
-using IncrementialMapper.SyntaxProviders.Enums;
+using IncrementialMapper.Syntax.Providers.Enums;
 
-namespace IncrementialMapper.SyntaxProviders;
+namespace IncrementialMapper.Syntax.Providers;
 
 internal static class FormatProvider
 {

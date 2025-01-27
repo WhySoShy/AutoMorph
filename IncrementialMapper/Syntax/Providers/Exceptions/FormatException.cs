@@ -1,5 +1,5 @@
 ﻿using System;
 
-namespace IncrementialMapper.SyntaxProviders.Exceptions;
+namespace IncrementialMapper.Syntax.Providers.Exceptions;
 
 public class FormatException(string message) : Exception(message);

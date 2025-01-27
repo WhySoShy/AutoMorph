@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace IncrementialMapper.GeneratorHelpers;
+namespace IncrementialMapper.Generator.GeneratorHelpers;
 
 internal static class ClassHelper
 {
@@ -24,11 +24,15 @@ internal static class ClassHelper
         if (sourceSymbol is null)
             return null;
         
-        INamedTypeSymbol? targetSymbol = AttributeHelper.GetTargetFromAttribute<INamedTypeSymbol, SGMapperAttribute>(sourceSymbol);
+        // INamedTypeSymbol? targetSymbol = AttributeHelper.GetTargetFromAttribute<INamedTypeSymbol, SGMapperAttribute>(sourceSymbol);
 
         // Because the generator does not support parameter filled constructors, it should not try to generate on them.
-        if (targetSymbol is null || !targetSymbol.InstanceConstructors.Any(x => x.Parameters.Length == 0))
+        if (AttributeHelper.GetTargetFromAttribute<INamedTypeSymbol, SGMapperAttribute>(sourceSymbol) is not
+            { InstanceConstructors.IsEmpty: true } targetSymbol)
             return null;
+        
+        // if (targetSymbol is null || !targetSymbol.InstanceConstructors.Any(x => x.Parameters.Length == 0))
+        //     return null;
         
         ClassToken generatedToken = new ()
         {

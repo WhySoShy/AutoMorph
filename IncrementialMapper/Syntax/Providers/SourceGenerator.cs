@@ -1,10 +1,10 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using IncrementialMapper.Syntax.Providers.Enums;
 using IncrementialMapper.Syntax.Tokens;
-using IncrementialMapper.SyntaxProviders.Enums;
 using Microsoft.CodeAnalysis;
 
-namespace IncrementialMapper.SyntaxProviders;
+namespace IncrementialMapper.Syntax.Providers;
 
 internal static class SourceGenerator
 {

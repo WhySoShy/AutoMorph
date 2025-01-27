@@ -1,12 +1,12 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
+using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
+using IncrementialMapper.Syntax.Providers.Enums;
 using IncrementialMapper.Syntax.Tokens;
-using IncrementialMapper.SyntaxProviders.Enums;
-using IncrementialMapper.Utilities;
 
-namespace IncrementialMapper.SyntaxProviders;
+namespace IncrementialMapper.Syntax.Providers;
 
 internal static class ClassProvider
 {

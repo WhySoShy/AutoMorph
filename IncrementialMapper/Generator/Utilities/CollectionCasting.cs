@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
 
-namespace IncrementialMapper.Utilities;
+namespace IncrementialMapper.Generator.Utilities;
 
 internal static class CollectionCasting
 {

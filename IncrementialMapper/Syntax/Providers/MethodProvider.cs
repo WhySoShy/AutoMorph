@@ -1,11 +1,11 @@
 ﻿using System.CodeDom.Compiler;
 using System.Linq;
+using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
+using IncrementialMapper.Syntax.Providers.Enums;
 using IncrementialMapper.Syntax.Tokens;
-using IncrementialMapper.SyntaxProviders.Enums;
-using IncrementialMapper.Utilities;
 
-namespace IncrementialMapper.SyntaxProviders;
+namespace IncrementialMapper.Syntax.Providers;
 
 internal static class MethodProvider
 {
@@ -37,10 +37,10 @@ internal static class MethodProvider
         
         writer
             .Append($"{classToken.Visibility!.Value.ToReadAbleString()} {methodModifier}")
-            .Append(token.GetMethodTypeAsString(classToken.TargetClass) + " " + token.Name)
+            .Append(token.GetMethodKindAsString(classToken.TargetClass) + " " + token.Name)
             .AppendFormat(FormatType.OpenParentheses, IndentType.Passive)
                 .Append(parameterKeyword)
-                .Append($"{token.GetMethodTypeAsString(classToken.SourceClass)} {PARAMETER_NAME}")
+                .Append($"{token.GetMethodKindAsString(classToken.SourceClass)} {PARAMETER_NAME}")
             .AppendFormat(FormatType.ClosedParentheses, IndentType.Passive)
             .AppendLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendLine()
                 .AppendReturn(token, classToken)
@@ -57,7 +57,7 @@ internal static class MethodProvider
         // For example;
         // new ClassX() { Property = source.Property }
         // source.Select(x => new ClassX() { Property = x.Property })
-        string sourceReference = currentMethod.GetVariableSourceName();
+        string sourceReference = currentMethod.GetReferenceSourceName();
 
         writer
             .Append("return ");

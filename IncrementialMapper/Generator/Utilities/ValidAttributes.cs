@@ -2,11 +2,11 @@
 using IncrementialMapper.Attributes.Includes;
 using IncrementialMapper.Syntax.Kinds;
 
-namespace IncrementialMapper.Utilities;
+namespace IncrementialMapper.Generator.Utilities;
 
 internal static class ValidAttributes
 {
-    public static readonly Dictionary<string, MethodKind?> ValidIncludeAttributes = new()
+    internal static readonly Dictionary<string, MethodKind?> ValidIncludeAttributes = new()
     {
         { typeof(IncludeLinq).FullName, MethodKind.Linq },
         { typeof(IncludeIQueryable).FullName, MethodKind.Linq_IQueryable }

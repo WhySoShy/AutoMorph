@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.SyntaxProviders.Enums;
+﻿namespace IncrementialMapper.Syntax.Providers.Enums;
 
 internal enum FormatType
 {

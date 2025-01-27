@@ -1,7 +1,7 @@
 ﻿using IncrementialMapper.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 
-namespace IncrementialMapper.GeneratorHelpers;
+namespace IncrementialMapper.Generator.GeneratorHelpers;
 
 internal static class UtilHelper
 {

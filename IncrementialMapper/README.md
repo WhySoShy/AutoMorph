@@ -41,6 +41,7 @@
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
 - [ ] Allow the user to set custom names for the mappers through the `SGMapper` attribute
 - [ ] Allow mapping from between property types,
+- [ ] Allow `MarkAsStatic` attribute to be appended on methods, to allow static methods
 
 ### Attribute Ideas:
 - [ ] Order nested collections

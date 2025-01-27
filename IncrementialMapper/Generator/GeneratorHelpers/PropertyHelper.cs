@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Attributes;
 using IncrementialMapper.Attributes.Excludes;
+using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
-using IncrementialMapper.Utilities;
 using Microsoft.CodeAnalysis;
 using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace IncrementialMapper.GeneratorHelpers;
+namespace IncrementialMapper.Generator.GeneratorHelpers;
 
 public static class PropertyHelper
 {  
@@ -95,7 +95,7 @@ public static class PropertyHelper
         ClassToken? classToken = ClassHelper.GenerateClassToken(targetAsINamedTypeSymbol);
         
         // If it could not find a suitable MethodToken, then it should just default to IEnumerable.
-        MethodToken? methodToken = classToken is null ? null : classToken.Methods.FirstOrDefault(x => x.GetVariableSourceName().Equals(allowedCollection.Key)) ?? 
+        MethodToken? methodToken = classToken is null ? null : classToken.Methods.FirstOrDefault(x => x.GetReferenceSourceName().Equals(allowedCollection.Key)) ?? 
                                                                classToken.Methods.FirstOrDefault(x => x.Type is MethodKind.Linq);
 
         if (methodToken is not null && classToken is not null)

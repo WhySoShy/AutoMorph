@@ -4,8 +4,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using IncrementialMapper.GeneratorHelpers;
-using IncrementialMapper.SyntaxProviders;
+using IncrementialMapper.Generator.GeneratorHelpers;
+using IncrementialMapper.Syntax.Providers;
 
 namespace IncrementialMapper;
 

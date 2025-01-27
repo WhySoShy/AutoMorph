@@ -2,14 +2,14 @@
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
 
-namespace IncrementialMapper.Utilities;
+namespace IncrementialMapper.Generator.Utilities;
 
-internal static class KindHelper
+internal static class KindStringifier
 {
-    public const string IENUMERABLE = "global::System.Collections.Generic.IEnumerable";
-    public const string IQUERYABLE = "global::System.Linq.IQueryable";
+    const string IENUMERABLE = "global::System.Collections.Generic.IEnumerable";
+    const string IQUERYABLE = "global::System.Linq.IQueryable";
     
-    public static string ToReadAbleString(this VisibilityKind visibility)
+    internal static string ToReadAbleString(this VisibilityKind visibility)
         => visibility switch
         {
             VisibilityKind.Public => "public",
@@ -19,7 +19,7 @@ internal static class KindHelper
             _ => throw new NotSupportedException("This visibility is not supported.")
         };
 
-    public static string ToReadableString(this ModifierKind modifier)
+    internal static string ToReadableString(this ModifierKind modifier)
         => modifier switch
         {
             ModifierKind.Partial => "partial",
@@ -27,7 +27,7 @@ internal static class KindHelper
             _ => throw new NotSupportedException("This modifier is not supported.")
         };
 
-    public static string GetMethodTypeAsString(this MethodToken token, ReferenceClassToken classToken)
+    internal static string GetMethodKindAsString(this MethodToken token, ReferenceClassToken classToken)
         => token.Type switch
         {
             MethodKind.Standard => $"{classToken.FullPath}",
@@ -45,7 +45,7 @@ internal static class KindHelper
     ///     <code>source.Select(x => new ClassX() { Property = x.Property })</code>
     /// </para>
     /// </summary>
-    public static string GetVariableSourceName(this MethodToken token)
+    internal static string GetReferenceSourceName(this MethodToken token)
         => token.Type switch
         {
             MethodKind.Standard => "source",
@@ -53,7 +53,7 @@ internal static class KindHelper
             _ => throw new NotSupportedException("This method is not supported.")
         };
 
-    public static string GetModifierAsString(this ModifierKind modifier)
+    internal static string GetModifierAsString(this ModifierKind modifier)
         => modifier switch
         {
             ModifierKind.Partial => "partial",

@@ -1,4 +1,4 @@
-﻿using IncrementialMapper.Utilities;
+﻿using IncrementialMapper.Generator.Utilities;
 
 namespace IncrementialMapper.Syntax.Kinds;
 

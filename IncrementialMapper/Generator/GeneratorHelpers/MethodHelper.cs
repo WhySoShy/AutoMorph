@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Attributes.Excludes;
 using IncrementialMapper.Attributes.Includes;
+using IncrementialMapper.Generator.Utilities;
 using IncrementialMapper.Syntax.Kinds;
 using IncrementialMapper.Syntax.Tokens;
-using IncrementialMapper.Utilities;
 using Microsoft.CodeAnalysis;
 using MethodKind = IncrementialMapper.Syntax.Kinds.MethodKind;
 
-namespace IncrementialMapper.GeneratorHelpers;
+namespace IncrementialMapper.Generator.GeneratorHelpers;
 
 internal static class MethodHelper
 {
@@ -31,16 +31,7 @@ internal static class MethodHelper
             if (ValidAttributes.ValidIncludeAttributes.FirstOrDefault(x => x.Key == fullAttributeName).Value is not { } methodKind)
                 continue;
 
-            List<ModifierKind> modifiers = [];
-
-            if (attribute.isExternal)
-                modifiers.Add(ModifierKind.Partial);
-            else if (classKinds.Any(x => x == ModifierKind.Static))
-                modifiers.Add(ModifierKind.Static);
-            else
-                modifiers.Add(ModifierKind.None);
-
-            MethodToken generatedToken = new MethodToken(modifiers.ToArray(), methodKind,
+            MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodKind,
                 attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
             
             methods.Add(generatedToken);
@@ -48,12 +39,12 @@ internal static class MethodHelper
         
         // Always include the standard mapper unless the user has explicitly told not to.
         if (!sourceSymbol.ContainsAttribute<ExcludeStandard>())
-            methods.Add(new MethodToken([classKinds.Any(x => x is ModifierKind.Static) ? ModifierKind.Static : ModifierKind.None], MethodKind.Standard, defaultMethodName));
+            methods.Add(new MethodToken([classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None], MethodKind.Standard, defaultMethodName));
         
         return methods;
     }
     
-    private static IEnumerable<(ISymbol symbol, bool isExternal, string methodName)> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
+    static IEnumerable<(ISymbol symbol, bool isExternal, string methodName)> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
         => [
             // Get the methods that have Included attributes on them and is Partial if the class is marked as partial.
             // If the class has not been marked as partial, then it makes no sense to get methods that is maybe included.
@@ -75,8 +66,21 @@ internal static class MethodHelper
             
             // TODO: Find a way to make this less hard-coded.
         ];
+
+    static ModifierKind[] GetMethodModifiers(bool isExternal, List<ModifierKind> classKinds)
+    {
+        List<ModifierKind> modifierKinds = [];
+
+        if (isExternal)
+            modifierKinds.Add(ModifierKind.Partial);
+        
+        if (classKinds.Contains(ModifierKind.Static))
+            modifierKinds.Add(ModifierKind.Static);
+        
+        return !modifierKinds.Any() ? [ModifierKind.None] : [.. modifierKinds];
+    }
     
-    private static Func<AttributeData, bool> GetValidAttributeExpression()
+    static Func<AttributeData, bool> GetValidAttributeExpression()
         => x => ValidAttributes.ValidIncludeAttributes.Any(y =>
             y.Key == $"{ValidAttributes.INCLUDE_ATTRIBUTE_NAMESPACE}.{x.AttributeClass!.Name}");
 }
