@@ -3,4 +3,4 @@
 - [x] Combine Includes
 - [ ] Renaming of methods
 - [ ] Renaming of files
-- [ ] Renaming of Kinds & Tokens
+- [x] Renaming of Kinds & Tokens

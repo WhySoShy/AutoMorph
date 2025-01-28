@@ -8,6 +8,7 @@ using IncrementialMapper.Internal.Syntax.Kinds;
 using IncrementialMapper.Internal.Syntax.Tokens;
 using IncrementialMapper.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
 
@@ -25,13 +26,12 @@ internal static class MethodHelper
         // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in availableMethods)
         {
-            string fullAttributeName = attribute.symbol.ToDisplayString();
-            var huh = attribute.symbol;
-            // Check if the attribute is valid for the enabled attributes.
-            if (ValidAttributes.ValidIncludeAttributes.FirstOrDefault(x => x.Key == fullAttributeName).Value is not { } methodKind)
+            MethodType methodType = GetMethodType(attribute.symbol);
+            if (methodType is MethodType.None)
                 continue;
+            
 
-            MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodKind,
+            MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodType,
                 attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
             
             methods.Add(generatedToken);
@@ -44,7 +44,7 @@ internal static class MethodHelper
         return methods;
     }
     
-    static IEnumerable<(ISymbol symbol, bool isExternal, string methodName)> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
+    static IEnumerable<(AttributeData symbol, bool isExternal, string methodName)> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
         => [
             // Get the methods that have Included attributes on them and is Partial if the class is marked as partial.
             // If the class has not been marked as partial, then it makes no sense to get methods that is maybe included.
@@ -55,14 +55,13 @@ internal static class MethodHelper
                     .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<Include>())
                     .Select(x => (x
                             .GetAttributes()
-                            .FirstOrDefault(_validAttributeExpression)!
-                            .AttributeClass, true, x.Name)
+                            .FirstOrDefault(_validAttributeExpression)!, true, x.Name)
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
                 .Where(_validAttributeExpression)
-                .Select(y => (y.AttributeClass, false, string.Empty))!
+                .Select(y => (y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
         ];
@@ -79,6 +78,10 @@ internal static class MethodHelper
         
         return !modifierKinds.Any() ? [ModifierKind.None] : [.. modifierKinds];
     }
+
+    static MethodType GetMethodType(AttributeData? attribute)
+        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None);
+
     
     static readonly Func<AttributeData, bool> _validAttributeExpression = x => x.AttributeClass?.ToDisplayString() == AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + $".{nameof(Include)}";
 }

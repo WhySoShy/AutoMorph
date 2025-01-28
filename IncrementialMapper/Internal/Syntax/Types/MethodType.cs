@@ -3,8 +3,9 @@
 /// <summary>
 /// The mapper type that should be generated.
 /// </summary>
-public enum MethodType
+internal enum MethodType
 {
+    None,
     /// <summary>
     /// This is your standard object-object mapper.
     /// </summary>

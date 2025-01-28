@@ -30,6 +30,8 @@
 - [ ] Allow the user to set custom names for the mappers through the `SGMapper` attribute
 - [ ] Allow mapping from between property types,
 - [ ] Allow `MarkAsStatic` attribute to be appended on partial methods, to allow static methods
+- [ ] Config files
+- > This would allow users to set a default mapping configuration, that will be applied to all the mappers within the project or assembly.
 
 
 ### Attribute Ideas:
