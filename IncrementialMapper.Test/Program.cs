@@ -13,6 +13,7 @@
 // };
 //
 
+
 // // Generic Collections
 // Queue<NestedObject2> examplesQueue = new Queue<NestedObject2>(ienumerable.MapExample());
 // Stack<NestedObject2> examplesStack = new Stack<NestedObject2>(ienumerable.MapExample());

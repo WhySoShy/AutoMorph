@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using IncrementialMapper.Constants;
+using IncrementialMapper.Internal.Constants;
 
 namespace IncrementialMapper.Abstractions.Base;
 

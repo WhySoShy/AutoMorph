@@ -14,10 +14,14 @@
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.
-- [ ] Add support for Dictionaries
-- [ ] Add support for parameter filled constructors
 - [ ] Allow inputted keys, that can be used as reference points on classes when generating.
   - This could allow for more flexibility.
+- [ ] Ensure abstract classes cannot be mapped on.
+
+### Support Todo:
+- [ ] Add support for Internal, protected, internal protected classes.
+- [ ] Add support for Dictionaries
+- [ ] Add support for parameter filled constructors
 
 ### Generator Ideas:
 - [ ] Allow users to pass interfaces or classes, that will be used on generic mappers.
@@ -27,9 +31,11 @@
 - [ ] Allow mapping from between property types,
 - [ ] Allow `MarkAsStatic` attribute to be appended on partial methods, to allow static methods
 
+
 ### Attribute Ideas:
 - [ ] Order nested collections
 - [ ] Set nesting level
+- [ ] Add support for reverse mapping
 
 ### Add support for Collections:
 - [ ] Key-Value based collections, like SortedList, Dictionary etc.
