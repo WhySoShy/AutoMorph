@@ -4,36 +4,25 @@
 - > Properties can map into other properties with different names
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
-  
-### Supported Collections
-- IQueryable
-- IEnumerable
-- Queue
-- Stack
-- List
-- HashSet
-- LinkedList
-- ConcurrentQueue
-- BlockingCollection
-- ConcurrentBag
-- ImmutableList
-- ImmutableQueue
-- ImmutableStack
-- ImmutableSortedSet
 
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor
 - [ ] Raise warning if multiple mappers has been marked on the same source class, if no key has been added.
 > This can be done with generic attributes.
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
+- [ ] Raise warning if the source or target class does not contain any properties.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.
-- [ ] Add support for Dictionaries
-- [ ] Add support for parameter filled constructors
 - [ ] Allow inputted keys, that can be used as reference points on classes when generating.
   - This could allow for more flexibility.
+- [ ] Ensure abstract classes cannot be mapped on.
+
+### Support Todo:
+- [ ] Add support for Internal, protected, internal protected classes.
+- [ ] Add support for Dictionaries
+- [ ] Add support for parameter filled constructors
 
 ### Generator Ideas:
 - [ ] Allow users to pass interfaces or classes, that will be used on generic mappers.
@@ -41,11 +30,15 @@
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
 - [ ] Allow the user to set custom names for the mappers through the `SGMapper` attribute
 - [ ] Allow mapping from between property types,
-- [ ] Allow `MarkAsStatic` attribute to be appended on methods, to allow static methods
+- [ ] Allow `MarkAsStatic` attribute to be appended on partial methods, to allow static methods
+- [ ] Config files
+- > This would allow users to set a default mapping configuration, that will be applied to all the mappers within the project or assembly.
+
 
 ### Attribute Ideas:
 - [ ] Order nested collections
 - [ ] Set nesting level
+- [ ] Add support for reverse mapping
 
 ### Add support for Collections:
 - [ ] Key-Value based collections, like SortedList, Dictionary etc.
