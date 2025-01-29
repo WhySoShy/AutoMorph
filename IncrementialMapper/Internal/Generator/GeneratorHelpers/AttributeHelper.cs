@@ -1,13 +1,21 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
 
 internal static class AttributeHelper
 {
+    internal static INamedTypeSymbol? GetTargetTypeFromAttribute<T>(ISymbol? sourceSymbol)
+    {
+        if (sourceSymbol is null && GetAttribute<T>(T))
+            return null;
+        
+        return null;
+    }
+    
     internal static TReturn? GetTargetFromAttribute<TReturn, TAttribute>(ISymbol? currentClassSymbol)
         where TReturn : class
-        where TAttribute : System.Attribute
     {
         if (currentClassSymbol is not null && GetAttribute<TAttribute>(currentClassSymbol) is { ConstructorArguments.Length: >= 0 } attributeData)
             return attributeData.ConstructorArguments[0].Value as TReturn;

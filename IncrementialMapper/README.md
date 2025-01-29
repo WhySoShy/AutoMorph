@@ -4,6 +4,10 @@
 - > Properties can map into other properties with different names
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
+  
+### Doing:
+- [ ] Generic mapper extensions
+- [ ] Change SGMapperAttribute type from parameter to type parameter
 
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor

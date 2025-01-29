@@ -5,13 +5,9 @@ using IncrementialMapper.Abstractions.Enums;
 
 namespace IncrementialMapper.Test.Examples;
 
-[SGMapper(typeof(ExampleTarget))]
-[Include(MapperType.Linq)]
-public partial class Example
+[SGMapper<ExampleTarget>]
+public class Example
 {
-    [Include(MapperType.IQueryable)]
-    public partial IQueryable<ExampleTarget> MapperTarget(IQueryable<Example> source);
-
     public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello
     
     [SGProperty(nameof(ExampleTarget.Huh))]
