@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Abstractions.Attributes;
+using IncrementialMapper.Internal.Constants;
 using IncrementialMapper.Internal.Syntax.Kinds;
 using IncrementialMapper.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
@@ -11,8 +12,6 @@ namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
 
 internal static class ClassHelper
 {
-    private const string DEFAULT_NAMESPACE = "IncrementialMapper.Generated.Mappers";
-    
     /// <summary>
     /// Contains all the classes that already got a structure.
     /// </summary>
@@ -34,7 +33,7 @@ internal static class ClassHelper
         // Because the generator depends on its own mappers, it may try to generate the same class multiple times.
         // And to not do this, we cache the classes and retrieve them if needed.
         if (generatedToken.GetCachedClass() is { } cachedClass)
-            return cachedClass;
+            generatedToken = cachedClass;
 
         // Ensure that there always exists a type declaration of the source.
         // This is used to check if a class is marked as a partial class or not.
@@ -54,7 +53,7 @@ internal static class ClassHelper
         generatedToken.Methods = methods;
             
         // Ensures that the generated partial class will use the same namespace as the source class. 
-        generatedToken.Namespace ??= generatedToken.Modifiers.Any(x => x is ModifierKind.Partial) ? sourceSymbol.ContainingNamespace.ToDisplayString() : DEFAULT_NAMESPACE;
+        generatedToken.Namespace ??= generatedToken.Modifiers.Any(x => x is ModifierKind.Partial) ? sourceSymbol.ContainingNamespace.ToDisplayString() : AssemblyConstants.DEFAULT_NAMESPACE;
 
         // Remove the unnecessary namespaces, we don't want to include namespaces that are the same as our own.
         generatedToken.NameSpaces = [.. newNamespaces.Where(x => x != generatedToken.Namespace)];

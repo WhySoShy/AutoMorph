@@ -80,7 +80,8 @@ internal static class MethodHelper
     }
 
     static MethodType GetMethodType(AttributeData? attribute)
-        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None);
+        // You need to increment the value with 1, else it will give an incorrect value.
+        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
 
     
     static readonly Func<AttributeData, bool> _validAttributeExpression = x => x.AttributeClass?.ToDisplayString() == AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + $".{nameof(Include)}";

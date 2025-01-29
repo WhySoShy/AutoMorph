@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using IncrementialMapper.Internal.Constants;
 using IncrementialMapper.Internal.Syntax.Kinds;
 
 // ReSharper disable TypeWithSuspiciousEqualityIsUsedInRecord.Global
