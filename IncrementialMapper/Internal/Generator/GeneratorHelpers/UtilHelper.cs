@@ -27,7 +27,11 @@ internal static class UtilHelper
     /// Transforms a ISymbol into a custom ReferenceClassToken
     /// </summary>
     internal static ReferenceClassToken TransformClass(this ISymbol symbol)
-    {
-        return new ReferenceClassToken(symbol.Name, symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-    }
+        => new ReferenceClassToken(symbol.Name, symbol.SymbolAsQualifiedName());
+    
+    /// <summary>
+    /// Gets the <c>.ToDisplayString()</c> containing the namespace for the symbol.
+    /// </summary>
+    internal static string SymbolAsQualifiedName(this ISymbol symbol)
+        => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 }

@@ -10,6 +10,7 @@
 - [ ] Raise warning if multiple mappers has been marked on the same source class, if no key has been added.
 > This can be done with generic attributes.
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
+- [ ] Raise warning if the source or target class does not contain any properties.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
 
 ### Generator Todo:
