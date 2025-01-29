@@ -28,4 +28,6 @@ internal sealed partial record MethodToken(
     public ModifierKind[] Modifiers { get; } = Modifiers.OrderBy(x => x).ToArray();
 
     public MethodType Type { get; } = Type;
+    
+    public bool IsGeneric { get; set; }
 }

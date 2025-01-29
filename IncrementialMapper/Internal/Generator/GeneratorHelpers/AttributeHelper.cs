@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
+using IncrementialMapper.Abstractions.Attributes;
+using IncrementialMapper.Internal.Constants;
 using Microsoft.CodeAnalysis;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
 
 internal static class AttributeHelper
 {
-    internal static INamedTypeSymbol? GetTargetTypeFromAttribute<T>(ISymbol? sourceSymbol)
+    
+    internal static ImmutableArray<ITypeSymbol?> GetTypeParametersFromAttribute<TInterface>(this ISymbol? sourceSymbol)
     {
-        if (sourceSymbol is null && GetAttribute<T>(T))
-            return null;
-        
-        return null;
+        if (sourceSymbol?.GetAttributeFromInterface<TInterface>() is not { } attribute)
+            return [];
+
+        return [..attribute.AttributeClass?.TypeArguments ?? [ ]];
     }
     
     internal static TReturn? GetTargetFromAttribute<TReturn, TAttribute>(ISymbol? currentClassSymbol)
@@ -22,14 +26,24 @@ internal static class AttributeHelper
             
         return null;
     }
-
+    
     static AttributeData? GetAttribute<T>(ISymbol? currentClassSymbol)
     {
         return currentClassSymbol?.GetAttributes().FirstOrDefault(x => x.AttributeClass is not null && x.AttributeClass.Name.Equals(typeof(T).Name));
     }
 
-    internal static bool ContainsAttribute<T>(this ISymbol? source)
+    static AttributeData? GetAttributeFromInterface<T>(this ISymbol? sourceSymbol)
     {
-        return source is not null && source.GetAttributes().Any(x => x.AttributeClass?.Name == typeof(T).Name);
+        return sourceSymbol?
+            .GetAttributes()
+            .FirstOrDefault(x => 
+                (bool)x.AttributeClass?.AllInterfaces
+                    .Any(y => y.ToDisplayString() == typeof(T).FullName)
+                );
+    }
+
+    internal static bool ContainsAttribute(this ISymbol? source, string fullyQualifiedAttributeName)
+    {
+        return source is not null && source.GetAttributes().Any(x => x.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName || x.AttributeClass?.BaseType?.ToDisplayString() == fullyQualifiedAttributeName);
     }
 }

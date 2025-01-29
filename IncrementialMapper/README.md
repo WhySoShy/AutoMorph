@@ -7,7 +7,7 @@
   
 ### Doing:
 - [ ] Generic mapper extensions
-- [ ] Change SGMapperAttribute type from parameter to type parameter
+- [x] Change SGMapperAttribute type from parameter to type parameter
 
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor

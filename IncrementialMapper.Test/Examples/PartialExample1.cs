@@ -6,6 +6,7 @@ using IncrementialMapper.Abstractions.Enums;
 namespace IncrementialMapper.Test.Examples;
 
 [SGMapper<ExampleTarget>]
+[Include<ExampleTarget>(MapperType.Linq)]
 public class Example
 {
     public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello

@@ -25,7 +25,7 @@ internal static class SourceGenerator
         // Close the namespace again.
         writer.AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent);
         
-        context.AddSource($"MapperFrom{token.SourceClass.Name}To{token.TargetClass.Name}.g.cs", writer.InnerWriter.ToString());
+        // context.AddSource($"MapperFrom{token.SourceClass.Name}To{token.TargetClass.Name}.g.cs", writer.InnerWriter.ToString());
     }
 
     private static IndentedTextWriter AppendNamespaces(this IndentedTextWriter writer, HashSet<string> usingNamespaces)

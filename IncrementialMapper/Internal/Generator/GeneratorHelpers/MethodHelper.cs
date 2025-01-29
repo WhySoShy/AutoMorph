@@ -17,9 +17,16 @@ internal static class MethodHelper
     internal static List<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, List<ModifierKind> classKinds, string targetClassName)
     {
         List<MethodToken> methods = [];
-
+        
+        // Why isn't it returning anything???
         var availableMethods = GetValidMethods(classKinds, sourceSymbol).Where(x => x.symbol is not null);
 
+        var attrClass = sourceSymbol.GetAttributes().Last().AttributeClass;
+        var qualifiedName = nameof(Include).AttributeAsQualifiedName();
+        var attrNameEquals = attrClass.ToDisplayString() == qualifiedName;
+        var baseAttrNameEquals = attrClass.BaseType.ToDisplayString() == qualifiedName;
+        var contains = attrClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName());
+        
         // This is the default method name, that is being used when a method is not partial.
         string defaultMethodName = $"MapTo{targetClassName}";
         
@@ -27,9 +34,9 @@ internal static class MethodHelper
         foreach (var attribute in availableMethods)
         {
             MethodType methodType = GetMethodType(attribute.symbol);
+            
             if (methodType is MethodType.None)
                 continue;
-            
 
             MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodType,
                 attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
@@ -38,7 +45,7 @@ internal static class MethodHelper
         }
         
         // Always include the standard mapper unless the user has explicitly told not to.
-        if (!sourceSymbol.ContainsAttribute<Exclude>())
+        if (!sourceSymbol.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()))
             methods.Add(new MethodToken([classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None], MethodType.Standard, defaultMethodName));
         
         return methods;
@@ -52,15 +59,15 @@ internal static class MethodHelper
                 sourceSymbol 
                     .GetMembers()
                     // We only need to iterate on the Methods, nothing else.
-                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute<Include>())
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))
                     .Select(x => (x
                             .GetAttributes()
-                            .FirstOrDefault(_validAttributeExpression)!, true, x.Name)
+                            .FirstOrDefault(y => y.AttributeClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))!, true, x.Name)
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
-                .Where(_validAttributeExpression)
+                .Where(x => x.AttributeClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))
                 .Select(y => (y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
@@ -82,7 +89,4 @@ internal static class MethodHelper
     static MethodType GetMethodType(AttributeData? attribute)
         // You need to increment the value with 1, else it will give an incorrect value.
         => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
-
-    
-    static readonly Func<AttributeData, bool> _validAttributeExpression = x => x.AttributeClass?.ToDisplayString() == AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + $".{nameof(Include)}";
 }

@@ -1,4 +1,5 @@
-﻿using IncrementialMapper.Internal.Syntax.Tokens;
+﻿using IncrementialMapper.Internal.Constants;
+using IncrementialMapper.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
@@ -34,4 +35,9 @@ internal static class UtilHelper
     /// </summary>
     internal static string SymbolAsQualifiedName(this ISymbol symbol)
         => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+    internal static string AttributeAsQualifiedName(this string nameOfAttribute)
+    {
+        return AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + "." + nameOfAttribute;
+    }
 }
