@@ -5,27 +5,39 @@ using AutoMorph.Internal.Syntax.Kinds;
 namespace AutoMorph.Internal.Syntax.Tokens;
 
 internal record ReferencePropertyToken(
-        string SourcePropertyName,
-        string TargetPropertyName
+        ReferencePropertyToken.Property SourceProperty,
+        ReferencePropertyToken.Property TargetProperty
     )
 {
-    public string SourcePropertyName { get; } = SourcePropertyName;
-    public string TargetPropertyName { get; } = TargetPropertyName;
+    internal Property SourceProperty { get; } = SourceProperty;
+    internal Property TargetProperty { get; } = TargetProperty;
     
     /// <summary>
-    /// If the <see cref="SourcePropertyName"/> is an object, it should create a new mapper, that equals that type and append the mapper into <see cref="NestedObjectMapperMethod"/> for use when generating.
+    /// If the <see cref="SourceProperty"/> is an object, it should create a new mapper, that equals that type and append the mapper into <see cref="NestedObjectMapperMethod"/> for use when generating.
     /// </summary>
-    public NestedObjectToken? NestedObject { get; set; }
+    internal NestedObjectToken? NestedObject { get; set; }
     
-    internal record NestedObjectToken(MethodToken MethodToken, KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type, PropertyKind Kind)
+    internal record NestedObjectToken(MethodToken MethodToken, KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type)
     {
-        public MethodToken MethodToken { get; } = MethodToken;
+        internal MethodToken MethodToken { get; } = MethodToken;
 
         /// <summary>
         /// Name of the object or collection, ex -> <c>System.Collections.Generic.Queue&lt;T&gt;</c>
         /// </summary>
-        public KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type { get; } = Type;
+        internal KeyValuePair<string, Func<ReferencePropertyToken, string, string>> Type { get; } = Type;
+    }
 
-        public PropertyKind Kind { get; } = Kind;
+    internal record Property(string Name, string ValueType, CastingKind Casting)
+    {
+        internal string Name { get; } = Name;
+
+        /// <summary>
+        /// The type of the property as a string.
+        /// </summary>
+        internal string ValueType { get; } = ValueType;
+
+        internal CastingKind Casting { get; } = Casting;
+        
+        internal bool AllowedAsNull { get; }
     }
 }

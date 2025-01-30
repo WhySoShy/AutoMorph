@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
-using AutoMorph.Internal.Generator.Validators;
+using AutoMorph.Internal.Generator.Casting;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Internal.Syntax.Types;
@@ -36,7 +36,7 @@ public static partial class PropertyHelper
                 foundTargetProperty.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()) || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
                 continue;
             
-            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.Name, foundTargetProperty.Name)
+            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty), foundTargetProperty.GetProperty(property))
                 {
                     NestedObject = GetNestedPropertyTokens(property, out string? newNamespace)
                 };
@@ -69,4 +69,12 @@ public static partial class PropertyHelper
             .Where(x => x.Kind == SymbolKind.Property)
             .Select(x => (x as IPropertySymbol)!)
             .ToList();
+
+    /// <summary>
+    /// Creates a PropertyToken that is being used as data reference to the property reading from.
+    /// </summary>
+    static ReferencePropertyToken.Property GetProperty(this IPropertySymbol property, IPropertySymbol targetProperty)
+    {
+        return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type));
+    }
 }

@@ -10,16 +10,21 @@ namespace IncrementialMapper.Test.Examples;
 [Include(MapperType.IQueryable)]
 public class Example
 {
-    public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello
+    public decimal Hello { get; set; } // Auto targets the property ExampleTarget.Hello
     
     [Property(nameof(ExampleTarget.Huh))]
     public string NewTarget { get; set; }
+    
+    public decimal Hello2 { get; set; }
+    public string NewTarget2 { get; set; }
 }
 
 public class ExampleTarget
 {
-    public string Hello { get; set; }
-    public string Huh { get; set; }
+    public int Hello { get; set; }
+    public decimal Huh { get; set; }
+    public decimal Hello2 { get; set; }
+    public string NewTarget2 { get; set; }
 }
 
 public interface IExample

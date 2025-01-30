@@ -75,12 +75,12 @@ internal static class MethodProvider
         {
             count++;
 
-            writer.Append($"{property.TargetPropertyName} = ");
+            writer.Append($"{property.TargetProperty.Name} = ");
 
             if (property.NestedObject is not null)
                 writer.Append(property.NestedObject.Type.Value.Invoke(property, sourceReference));
             else
-                writer.Append($"{sourceReference}.{property.SourcePropertyName}");
+                writer.Append($"{sourceReference}.{property.SourceProperty.Name}");
 
             if (count < token.Properties.Count)
                 writer

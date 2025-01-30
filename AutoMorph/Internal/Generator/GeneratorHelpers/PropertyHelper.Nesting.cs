@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AutoMorph.Internal.Generator.Validators;
+using AutoMorph.Internal.Generator.Casting;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Internal.Syntax.Types;
@@ -55,7 +55,7 @@ public static partial class PropertyHelper
         else
             newNamespace = null;
 
-        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, allowedCollection, PropertyKind.Collection);
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, allowedCollection);
     }
 
     static ReferencePropertyToken.NestedObjectToken? HandleObject(IPropertySymbol sourceProperty, out string? newNamespace)
@@ -69,8 +69,8 @@ public static partial class PropertyHelper
         else
             newNamespace = null;
 
-        string ObjectMapping(ReferencePropertyToken token, string sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}()";
-
-        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, new KeyValuePair<string, Func<ReferencePropertyToken, string, string>>(string.Empty, ObjectMapping), PropertyKind.Object);
+        return methodToken is null ? null : new ReferencePropertyToken.NestedObjectToken(methodToken, new KeyValuePair<string, Func<ReferencePropertyToken, string, string>>(string.Empty, ObjectMapping));
     }
+    
+    static string ObjectMapping(ReferencePropertyToken token, string sourceReference) => $"{sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken.Name}()";
 }
