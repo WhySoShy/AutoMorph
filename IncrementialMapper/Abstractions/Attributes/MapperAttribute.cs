@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using IncrementialMapper.Abstractions.Base;
+using IncrementialMapper.Internal;
 
 namespace IncrementialMapper.Abstractions.Attributes;
 
@@ -9,9 +8,17 @@ namespace IncrementialMapper.Abstractions.Attributes;
 /// </summary>
 /// <typeparam name="TTarget">Target class or interface.</typeparam>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = true)]
-public class SGMapperAttribute<TTarget> : BaseAttribute, ISGMapperAttribute;
+public class MapperAttribute<TTarget> : Attribute, IAttribute, IMapperAttribute
+{
+    public string? Key { get; set; }
+}
+
+/// <summary>
+/// This class is only used to Reference <see cref="MapperAttribute{TTarget}"/>
+/// </summary>
+internal abstract class MapperAttribute;
 
 /// <summary>
 /// Has no effect in the user code, only used to refer to the attribute in the generator.
 /// </summary>
-internal interface ISGMapperAttribute;
+internal interface IMapperAttribute;

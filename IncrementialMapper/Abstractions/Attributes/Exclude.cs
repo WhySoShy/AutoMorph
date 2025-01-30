@@ -1,5 +1,5 @@
 ﻿using System;
-using IncrementialMapper.Abstractions.Base;
+using IncrementialMapper.Internal;
 
 namespace IncrementialMapper.Abstractions.Attributes;
 
@@ -8,4 +8,7 @@ namespace IncrementialMapper.Abstractions.Attributes;
 /// Check documentation on how it works.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct)]
-public class Exclude(string? key = null) : BaseAttribute(key);
+public class Exclude : Attribute, IAttribute
+{
+    public string? Key { get; set; }
+}

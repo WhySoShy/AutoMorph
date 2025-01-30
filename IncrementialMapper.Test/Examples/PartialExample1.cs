@@ -5,14 +5,14 @@ using IncrementialMapper.Abstractions.Enums;
 
 namespace IncrementialMapper.Test.Examples;
 
-[SGMapper<ExampleTarget>]
+[Mapper<ExampleTarget>]
 [Include<IExample>(MapperType.Linq)]
 [Include(MapperType.IQueryable)]
 public class Example
 {
     public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello
     
-    [SGProperty(nameof(ExampleTarget.Huh))]
+    [Property(nameof(ExampleTarget.Huh))]
     public string NewTarget { get; set; }
 }
 

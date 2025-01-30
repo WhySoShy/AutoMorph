@@ -14,11 +14,6 @@ internal static class AttributeHelper
 
         return [..attribute.AttributeClass?.TypeArguments ?? [ ]];
     }
-
-    // internal static INamedTypeSymbol GetValueFromTypeParameter(this ITypeSymbol sourceSymbol)
-    // {
-    //     return sourceSymbol.
-    // }
     
     internal static TReturn? GetTargetFromAttribute<TReturn, TAttribute>(ISymbol? currentClassSymbol)
         where TReturn : class

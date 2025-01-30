@@ -39,7 +39,7 @@ internal static class MethodHelper
         if (!sourceSymbol.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()))
         {
             MethodToken token =
-                new MethodToken([classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None],
+                new MethodToken([!classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None],
                     MethodType.Standard, defaultMethodName);
 
             nameSpaces = [..nameSpaces, ..token.HandleGenerics(sourceSymbol, targetSymbol, null)];
@@ -96,8 +96,7 @@ internal static class MethodHelper
         if (attribute is not null && attribute.TypeArguments.Any() && attribute.TypeArguments.ElementAt(0) is { } extractedTypeArgument)
         {
             typeArgument = extractedTypeArgument as INamedTypeSymbol;
-            generatedToken.IsGeneric = true;
-            generatedToken.GenericTypeName = extractedTypeArgument.ToDisplayString();
+            generatedToken.Generic = new MethodToken.GenericType(extractedTypeArgument.ToDisplayString());
         }
 
         generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, typeArgument ?? targetSymbol, out var newNamespaces);

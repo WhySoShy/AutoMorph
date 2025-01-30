@@ -9,25 +9,22 @@ namespace IncrementialMapper.Internal.Syntax.Providers;
 
 internal static class ClassProvider
 {
-    public static ClassToken GenerateSourceClass(this ClassToken token)
+    internal static IndentedTextWriter GenerateSourceClass(this IndentedTextWriter writer, ClassToken token)
     {
-        IndentedTextWriter writer = token.Writer;
-
         string generatorClassName = token.Modifiers.Any(x => x is ModifierKind.Partial) ? $"{token.SourceClass.Name}" : $"GeneratedMapper_{token.SourceClass.Name}To{token.TargetClass.Name}";
         
         writer
-            .Append(token.Visibility!.Value.ToReadAbleString() + " ")
+            .Append(token.Visibility!.ToReadAbleString() + " ")
             .AppendModifiers(token.Modifiers)
             .Append($"class {generatorClassName}").AppendNewLine()
             .AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendNewLine()
-                // Append all the methods, that should be generated inside the class scope.
-                .CreateMethods(token)
+                .CreateMethods(token) // Append all the methods, that should be generated inside the class scope.
             .AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent).AppendNewLine();
         
-        return token;
+        return writer;
     }
 
-    private static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, List<ModifierKind> modifiers)
+    static IndentedTextWriter AppendModifiers(this IndentedTextWriter writer, List<ModifierKind> modifiers)
     {
         foreach (ModifierKind modifier in modifiers)
             writer.Append(modifier.GetModifierAsString() + " ");

@@ -29,7 +29,7 @@ public static partial class PropertyHelper
         foreach (IPropertySymbol property in sourceProperties)
         {
             // Ensure that the target is either set by the property name or specially set by the user.
-            string nameOfTargetProperty = AttributeHelper.GetTargetFromAttribute<string, SGPropertyAttribute>(property) ?? property.Name;
+            string nameOfTargetProperty = AttributeHelper.GetTargetFromAttribute<string, PropertyAttribute>(property) ?? property.Name;
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 

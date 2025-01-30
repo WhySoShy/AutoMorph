@@ -30,9 +30,7 @@ internal sealed partial record MethodToken(
 
     public MethodType Type { get; } = Type;
     
-    public bool IsGeneric { get; set; }
-    
-    public string? GenericTypeName { get; set; }
+    public GenericType? Generic { get; set; }
     
     /// <summary>
     /// <para>
@@ -41,4 +39,9 @@ internal sealed partial record MethodToken(
     /// </para>
     /// </summary>
     public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
+
+    internal record GenericType(string TypeName)
+    {
+        public string TypeName { get; } = TypeName;
+    }
 }

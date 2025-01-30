@@ -1,5 +1,5 @@
 ﻿using System;
-using IncrementialMapper.Abstractions.Base;
+using IncrementialMapper.Internal;
 
 namespace IncrementialMapper.Abstractions.Attributes;
 
@@ -10,4 +10,7 @@ namespace IncrementialMapper.Abstractions.Attributes;
 /// </summary>
 /// <param name="key"></param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-public class MarkAsStatic(string? key = null) : BaseAttribute(key);
+public class MarkAsStatic : Attribute, IAttribute
+{
+    public string? Key { get; set; }
+}

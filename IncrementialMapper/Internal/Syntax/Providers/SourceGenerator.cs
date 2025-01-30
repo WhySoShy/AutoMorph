@@ -8,7 +8,7 @@ namespace IncrementialMapper.Internal.Syntax.Providers;
 
 internal static class SourceGenerator
 {
-    public static void GenerateCode(ClassToken token, SourceProductionContext context)
+    internal static void GenerateCode(ClassToken token, SourceProductionContext context)
     {
         IndentedTextWriter writer = token.Writer;
 
@@ -18,17 +18,14 @@ internal static class SourceGenerator
             .Append("#nullable enable").AppendNewLine()
             .AppendNamespaces(token.NameSpaces).AppendNewLine(2)
             .Append($"namespace {token.Namespace}").AppendNewLine()
-            .AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendNewLine();
-
-        token.GenerateSourceClass();
-
-        // Close the namespace again.
-        writer.AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent);
-
+            .AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent) // Opens the namespace
+                .AppendNewLine().GenerateSourceClass(token)
+            .AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent); // Closes the namespace
+        
         context.AddSource($"MapperFrom{token.SourceClass.Name}To{token.TargetClass.Name}.g.cs", writer.InnerWriter.ToString());
     }
 
-    private static IndentedTextWriter AppendNamespaces(this IndentedTextWriter writer, HashSet<string> usingNamespaces)
+    static IndentedTextWriter AppendNamespaces(this IndentedTextWriter writer, HashSet<string> usingNamespaces)
     {
         foreach (string namespaceName in usingNamespaces)
             writer.Append($"using {namespaceName};");
