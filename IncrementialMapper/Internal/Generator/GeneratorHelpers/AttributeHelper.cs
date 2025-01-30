@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
 internal static class AttributeHelper
 {

@@ -3,7 +3,7 @@
   "profiles": {
     "Generators": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../IncrementialMapper.Test/IncrementialMapper.Test.csproj"
+      "targetProject": "../AutoMorph.Test/AutoMorph.Test.csproj"
     }
   }
 }

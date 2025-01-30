@@ -1,8 +1,8 @@
-﻿using IncrementialMapper.Internal.Constants;
+﻿using AutoMorph.Internal.Constants;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace IncrementialMapper.Internal;
+namespace AutoMorph.Internal;
 
 [Generator(LanguageNames.CSharp)]
 public class MapperGenerator : IIncrementalGenerator

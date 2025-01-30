@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Internal.Syntax.Kinds;
-using IncrementialMapper.Internal.Syntax.Types;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Types;
 
-namespace IncrementialMapper.Internal.Syntax.Tokens;
+namespace AutoMorph.Internal.Syntax.Tokens;
 
 /// <summary>
 /// A token that represents a mapper method, that needs to be generated. 

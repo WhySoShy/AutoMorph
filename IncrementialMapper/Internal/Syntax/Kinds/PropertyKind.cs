@@ -1,6 +1,6 @@
-﻿using IncrementialMapper.Internal.Generator.Validators;
+﻿using AutoMorph.Internal.Generator.Validators;
 
-namespace IncrementialMapper.Internal.Syntax.Kinds;
+namespace AutoMorph.Internal.Syntax.Kinds;
 
 
 public enum PropertyKind

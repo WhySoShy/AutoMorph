@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.Abstractions.Enums;
+﻿namespace AutoMorph.Abstractions.Enums;
 
 public enum MapperType
 {

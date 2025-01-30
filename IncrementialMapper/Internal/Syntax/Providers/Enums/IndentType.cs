@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.Internal.Syntax.Providers.Enums;
+﻿namespace AutoMorph.Internal.Syntax.Providers.Enums;
 
 public enum IndentType
 {

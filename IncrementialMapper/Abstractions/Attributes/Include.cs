@@ -1,8 +1,8 @@
 ﻿using System;
-using IncrementialMapper.Abstractions.Enums;
-using IncrementialMapper.Internal;
+using AutoMorph.Abstractions.Enums;
+using AutoMorph.Internal;
 
-namespace IncrementialMapper.Abstractions.Attributes;
+namespace AutoMorph.Abstractions.Attributes;
 
 /// <summary>
 /// The attribute works differently depending on what it is attached to. <br />

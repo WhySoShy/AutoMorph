@@ -8,6 +8,8 @@
         
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>1.0.0</Version>
+        <AssemblyName>AutoMorph</AssemblyName>
+        <RootNamespace>AutoMorph</RootNamespace>
     </PropertyGroup>
     
     <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.Internal.Syntax.Tokens;
+﻿namespace AutoMorph.Internal.Syntax.Tokens;
 
 /// <summary>
 /// Reference to a class, with the name and Fully qualified name.

@@ -1,8 +1,8 @@
-﻿using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Syntax.Tokens;
+﻿using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 
-namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
 internal static class UtilHelper
 {

@@ -1,7 +1,7 @@
 ﻿using System.CodeDom.Compiler;
-using IncrementialMapper.Internal.Syntax.Providers.Enums;
+using AutoMorph.Internal.Syntax.Providers.Enums;
 
-namespace IncrementialMapper.Internal.Syntax.Providers;
+namespace AutoMorph.Internal.Syntax.Providers;
 
 internal static class FormatProvider
 {

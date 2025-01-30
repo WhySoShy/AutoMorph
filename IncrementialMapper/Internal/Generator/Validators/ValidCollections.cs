@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Syntax.Tokens;
+using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Tokens;
 
 // ReSharper disable InconsistentNaming
 
-namespace IncrementialMapper.Internal.Generator.Validators;
+namespace AutoMorph.Internal.Generator.Validators;
 
 internal static class ValidCollections
 {

@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.Internal;
+﻿namespace AutoMorph.Internal;
 
 /// <summary>
 /// A base class that the attributes use to define a key.

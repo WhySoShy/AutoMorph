@@ -1,8 +1,8 @@
 ﻿using System;
-using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Syntax.Types;
+using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Types;
 
-namespace IncrementialMapper.Internal.Syntax.Tokens;
+namespace AutoMorph.Internal.Syntax.Tokens;
 
 internal sealed partial record MethodToken
 {

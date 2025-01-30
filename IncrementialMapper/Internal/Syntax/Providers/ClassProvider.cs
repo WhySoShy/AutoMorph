@@ -1,11 +1,11 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Internal.Syntax.Kinds;
-using IncrementialMapper.Internal.Syntax.Providers.Enums;
-using IncrementialMapper.Internal.Syntax.Tokens;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Providers.Enums;
+using AutoMorph.Internal.Syntax.Tokens;
 
-namespace IncrementialMapper.Internal.Syntax.Providers;
+namespace AutoMorph.Internal.Syntax.Providers;
 
 internal static class ClassProvider
 {

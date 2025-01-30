@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Abstractions.Attributes;
-using IncrementialMapper.Internal.Generator.Validators;
-using IncrementialMapper.Internal.Syntax.Kinds;
-using IncrementialMapper.Internal.Syntax.Tokens;
-using IncrementialMapper.Internal.Syntax.Types;
+using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Internal.Generator.Validators;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Tokens;
+using AutoMorph.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
 public static partial class PropertyHelper
 {  

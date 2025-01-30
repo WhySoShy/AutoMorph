@@ -2,15 +2,15 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Kinds;
 
 // ReSharper disable TypeWithSuspiciousEqualityIsUsedInRecord.Global
 
 // Everything in the record is being initialized at some point, if not it will not be generated, therefor we can safely disable to warning.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-namespace IncrementialMapper.Internal.Syntax.Tokens;
+namespace AutoMorph.Internal.Syntax.Tokens;
 
 /// <summary>
 /// A token that represents a class that needs to be generated, with its mapper methods and other information that the SG needs.

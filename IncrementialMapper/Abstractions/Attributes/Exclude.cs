@@ -1,7 +1,7 @@
 ﻿using System;
-using IncrementialMapper.Internal;
+using AutoMorph.Internal;
 
-namespace IncrementialMapper.Abstractions.Attributes;
+namespace AutoMorph.Abstractions.Attributes;
 
 /// <summary>
 /// Attribute works differently, when attached to class | struct and properties. <br />

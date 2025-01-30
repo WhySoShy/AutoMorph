@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using IncrementialMapper.Abstractions.Attributes;
-using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Syntax.Kinds;
-using IncrementialMapper.Internal.Syntax.Tokens;
+using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
 internal static class ClassHelper
 {

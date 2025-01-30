@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IncrementialMapper.Internal.Syntax.Kinds;
+namespace AutoMorph.Internal.Syntax.Kinds;
 
 /// <summary>
 /// Determines if the object should be created as static or partial.

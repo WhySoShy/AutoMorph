@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IncrementialMapper.Internal.Syntax.Kinds;
+namespace AutoMorph.Internal.Syntax.Kinds;
 
 internal enum VisibilityKind
 {

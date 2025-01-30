@@ -1,4 +1,4 @@
-﻿namespace IncrementialMapper.Internal.Syntax.Types;
+﻿namespace AutoMorph.Internal.Syntax.Types;
 
 /// <summary>
 /// The mapper type that should be generated.

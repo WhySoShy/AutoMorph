@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using IncrementialMapper.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Kinds;
 
-namespace IncrementialMapper.Internal.Syntax.Tokens;
+namespace AutoMorph.Internal.Syntax.Tokens;
 
 internal record ReferencePropertyToken(
         string SourcePropertyName,

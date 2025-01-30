@@ -1,12 +1,12 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using IncrementialMapper.Internal.Generator.GeneratorHelpers;
-using IncrementialMapper.Internal.Syntax.Providers;
-using IncrementialMapper.Internal.Syntax.Tokens;
+using AutoMorph.Internal.Generator.GeneratorHelpers;
+using AutoMorph.Internal.Syntax.Providers;
+using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 
-namespace IncrementialMapper.Internal;
+namespace AutoMorph.Internal;
 
 internal static class OutputGenerator
 {
