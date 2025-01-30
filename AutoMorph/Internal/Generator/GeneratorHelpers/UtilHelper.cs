@@ -1,6 +1,10 @@
-﻿using AutoMorph.Internal.Constants;
+﻿using System.Collections.Generic;
+using AutoMorph.Internal.Constants;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
@@ -28,7 +32,7 @@ internal static class UtilHelper
     /// Transforms a ISymbol into a custom ReferenceClassToken
     /// </summary>
     internal static ReferenceClassToken TransformClass(this ISymbol symbol)
-        => new ReferenceClassToken(symbol.Name, symbol.SymbolAsQualifiedName());
+        => new (symbol.Name, symbol.SymbolAsQualifiedName());
     
     /// <summary>
     /// Gets the <c>.ToDisplayString()</c> containing the namespace for the symbol.
@@ -37,7 +41,14 @@ internal static class UtilHelper
         => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     internal static string AttributeAsQualifiedName(this string nameOfAttribute)
+        => AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + "." + nameOfAttribute;
+    
+
+    internal static TypeDeclarationSyntax GetTypeDeclaration(this INamedTypeSymbol symbol)
     {
-        return AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + "." + nameOfAttribute;
+        return (symbol.DeclaringSyntaxReferences.FirstOrDefault()!.GetSyntax() as TypeDeclarationSyntax)!;
     }
+    
+    internal static bool IsPartial(this INamedTypeSymbol symbol)
+        => symbol.GetTypeDeclaration().Modifiers.Any(SyntaxKind.PartialKeyword); 
 }

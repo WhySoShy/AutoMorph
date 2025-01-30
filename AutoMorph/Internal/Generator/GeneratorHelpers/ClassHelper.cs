@@ -5,8 +5,6 @@ using AutoMorph.Internal.Constants;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
@@ -37,14 +35,9 @@ internal static class ClassHelper
         // And to not do this, we cache the classes and retrieve them if needed.
         if (generatedToken.GetCachedClass() is { } cachedClass)
             generatedToken = cachedClass;
-        
-        // Ensure that there always exists a type declaration of the source.
-        // This is used to check if a class is marked as a partial class or not.
-        if (sourceSymbol.GetTypeDeclaration() is not { } classDeclarationSyntax)
-            return null;
             
         if (!generatedToken.Modifiers.Any())
-            generatedToken.Modifiers = GetModifiers(classDeclarationSyntax, sourceSymbol);
+            generatedToken.Modifiers = GetModifiers(sourceSymbol);
         
         if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken.Modifiers, targetSymbol.Name, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
@@ -61,7 +54,7 @@ internal static class ClassHelper
         return generatedToken;
     }
     
-    static List<ModifierKind> GetModifiers(TypeDeclarationSyntax currentClass, ISymbol sourceSymbol)
+    static List<ModifierKind> GetModifiers(INamedTypeSymbol sourceSymbol)
     {
         List<ModifierKind> modifiers = [];
 
@@ -69,7 +62,7 @@ internal static class ClassHelper
         if (sourceSymbol.ContainsAttribute(nameof(MarkAsStatic).AttributeAsQualifiedName()))
             return [ModifierKind.Static];
         
-        if (currentClass.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+        if (sourceSymbol.IsPartial())
             modifiers.Add(ModifierKind.Partial);
         
         if (!modifiers.Any(x => x == ModifierKind.Partial))
@@ -77,9 +70,6 @@ internal static class ClassHelper
         
         return modifiers.OrderBy(x => x).ToList();
     }
-
-    static TypeDeclarationSyntax? GetTypeDeclaration(this INamedTypeSymbol symbol)
-        => symbol.DeclaringSyntaxReferences.FirstOrDefault()!.GetSyntax() as TypeDeclarationSyntax;
 
     static ClassToken GetCachedClass(this ClassToken token)
     {

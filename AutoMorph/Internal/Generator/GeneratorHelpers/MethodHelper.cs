@@ -26,11 +26,14 @@ internal static class MethodHelper
         {
             if (GetMethodType(attribute.symbol) is { } methodType && methodType is MethodType.None)
                 continue;
+
+            if (attribute.symbol.AttributeClass is not { } symbolAttribute)
+                continue;
             
-            MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodType,
+            MethodToken generatedToken = new MethodToken(symbolAttribute.GetMethodModifiers(attribute.isExternal, classKinds), methodType,
                 attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
             
-            nameSpaces = [..nameSpaces, ..generatedToken.HandleGenerics(sourceSymbol, targetSymbol, attribute.symbol.AttributeClass)];
+            nameSpaces = [..nameSpaces, ..generatedToken.HandleGenerics(sourceSymbol, targetSymbol, symbolAttribute)];
             
             methods.Add(generatedToken);
         }
@@ -72,7 +75,7 @@ internal static class MethodHelper
             // TODO: Find a way to make this less hard-coded.
         ];
 
-    static ModifierKind[] GetMethodModifiers(bool isExternal, List<ModifierKind> classKinds)
+    static ModifierKind[] GetMethodModifiers(this INamedTypeSymbol sourceSymbol, bool isExternal, List<ModifierKind> classKinds)
     {
         List<ModifierKind> modifierKinds = [];
 

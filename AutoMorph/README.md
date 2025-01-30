@@ -6,13 +6,6 @@
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
   
-### Doing:
-- [x] Generic mapper extensions
-- [x] Change SGMapperAttribute type from parameter to type parameter
-- [ ] Change the tokens to fit better into the structure.
-- [x] Change properties to be contained within each method instead of the whole class.
-- > This change is because of the generic mappers.
-
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor
 - [ ] Raise warning if multiple mappers has been marked on the same source class, if no key has been added.
@@ -26,6 +19,8 @@
 - [ ] Allow inputted keys, that can be used as reference points on classes when generating.
   - This could allow for more flexibility.
 - [ ] Ensure abstract classes cannot be mapped on.
+- [ ] Use caching for retrieving GetTypeDeclaration.
+- > This can be used by using [MSBuildWorkspace](https://www.nuget.org/packages/Microsoft.CodeAnalysis.Workspaces.MSBuild)
 
 ### Support Todo:
 - [ ] Add support for Internal, protected, internal protected classes.
@@ -33,15 +28,13 @@
 - [ ] Add support for parameter filled constructors
 
 ### Generator Ideas:
-- [ ] Allow users to pass interfaces or classes, that will be used on generic mappers.
+- [x] Allow users to pass interfaces or classes, that will be used on generic mappers.
 - [x] Allow nested objects, to be included inside the mappers.
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
-- [ ] Allow the user to set custom names for the mappers through the `SGMapper` attribute
-- [ ] Allow mapping from between property types,
-- [ ] Allow `MarkAsStatic` attribute to be appended on partial methods, to allow static methods
+- [ ] Allow the user to set custom names for the mappers through the `MapperAttribute`
+- [ ] Allow mapping from between property types
 - [ ] Config files
 - > This would allow users to set a default mapping configuration, that will be applied to all the mappers within the project or assembly.
-
 
 ### Attribute Ideas:
 - [ ] Set nesting level
