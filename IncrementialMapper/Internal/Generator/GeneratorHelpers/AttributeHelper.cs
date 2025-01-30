@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
-using IncrementialMapper.Abstractions.Attributes;
-using IncrementialMapper.Internal.Constants;
 using Microsoft.CodeAnalysis;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
@@ -17,6 +14,11 @@ internal static class AttributeHelper
 
         return [..attribute.AttributeClass?.TypeArguments ?? [ ]];
     }
+
+    // internal static INamedTypeSymbol GetValueFromTypeParameter(this ITypeSymbol sourceSymbol)
+    // {
+    //     return sourceSymbol.
+    // }
     
     internal static TReturn? GetTargetFromAttribute<TReturn, TAttribute>(ISymbol? currentClassSymbol)
         where TReturn : class
@@ -45,5 +47,13 @@ internal static class AttributeHelper
     internal static bool ContainsAttribute(this ISymbol? source, string fullyQualifiedAttributeName)
     {
         return source is not null && source.GetAttributes().Any(x => x.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName || x.AttributeClass?.BaseType?.ToDisplayString() == fullyQualifiedAttributeName);
+    }
+    
+    /// <summary>
+    /// Checks if an attribute is of type <see cref="fullyQualifiedAttributeName"/> or its base type is of type.
+    /// </summary>
+    internal static bool IsAttribute(this AttributeData source, string fullyQualifiedAttributeName)
+    {
+        return source.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName || source.AttributeClass?.BaseType?.ToDisplayString() == fullyQualifiedAttributeName;
     }
 }

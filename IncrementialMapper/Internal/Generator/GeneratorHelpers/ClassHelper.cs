@@ -40,16 +40,13 @@ internal static class ClassHelper
         
         // Ensure that there always exists a type declaration of the source.
         // This is used to check if a class is marked as a partial class or not.
-        if (PropertyHelper.GetValidProperties(sourceSymbol, targetSymbol, out HashSet<string> newNamespaces) is not { Count: > 0 } properties|| 
-            sourceSymbol.GetTypeDeclaration() is not { } classDeclarationSyntax)
+        if (sourceSymbol.GetTypeDeclaration() is not { } classDeclarationSyntax)
             return null;
-        
-        generatedToken.Properties = properties;
             
         if (!generatedToken.Modifiers.Any())
             generatedToken.Modifiers = GetModifiers(classDeclarationSyntax, sourceSymbol);
         
-        if (MethodHelper.GetMethods(sourceSymbol, generatedToken.Modifiers, targetSymbol.Name) is not { Count: > 0 } methods)
+        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken.Modifiers, targetSymbol.Name, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
         
         // The methods generated, should be generated no matter what because the class may want more mappers generated, than the cached class has.

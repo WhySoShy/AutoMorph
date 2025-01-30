@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Linq;
+using IncrementialMapper.Internal.Constants;
 using IncrementialMapper.Internal.Syntax.Kinds;
 using IncrementialMapper.Internal.Syntax.Providers.Enums;
 using IncrementialMapper.Internal.Syntax.Tokens;
@@ -36,12 +37,7 @@ internal static class MethodProvider
         string parameterKeyword = classToken.Modifiers.Any(x => x is ModifierKind.Static) ? "this " : string.Empty;
         
         writer
-            .Append($"{classToken.Visibility!.Value.ToReadAbleString()} {methodModifier}")
-            .Append(token.GetMethodKindAsString(classToken.TargetClass) + " " + token.Name)
-            .AppendFormat(FormatType.OpenParentheses, IndentType.Passive)
-                .Append(parameterKeyword)
-                .Append($"{token.GetMethodKindAsString(classToken.SourceClass)} {PARAMETER_NAME}")
-            .AppendFormat(FormatType.ClosedParentheses, IndentType.Passive)
+            .AppendMethodHeader(token, classToken)
             .AppendNewLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendNewLine()
                 .AppendReturn(token, classToken)
             .AppendNewLine().AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent).AppendNewLine();
@@ -67,7 +63,7 @@ internal static class MethodProvider
         writer
             .Append($"new {token.TargetClass.FullPath}()")
             .AppendNewLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendNewLine()
-            .AppendProperties(sourceReference, token).AppendNewLine();
+            .AppendProperties(sourceReference, currentMethod).AppendNewLine();
 
         writer
             .AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent);
@@ -82,7 +78,7 @@ internal static class MethodProvider
         return writer;
     }
 
-    private static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, ClassToken token)
+    private static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, MethodToken token)
     {
         int count = 0;
         foreach (ReferencePropertyToken property in token.Properties)
@@ -102,6 +98,36 @@ internal static class MethodProvider
                     .AppendNewLine();
         }
 
+        return writer;
+    }
+
+    private static IndentedTextWriter AppendMethodHeader(this IndentedTextWriter writer, MethodToken methodToken, ClassToken classToken)
+    {
+        string methodModifier = classToken.Modifiers[0] is ModifierKind.None ? string.Empty : " " + classToken.Modifiers[0].GetModifierAsString() + " ";
+        string visibility = classToken.Visibility.Value.ToReadAbleString();
+        string parameterKeyword = classToken.Modifiers.Any(x => x is ModifierKind.Static) ? "this " : string.Empty;
+
+        writer
+            .Append($"{visibility}{methodModifier}")
+            // It still returns the target type
+            .Append(methodToken.GetMethodKindAsString(classToken.TargetClass, false) + " " + methodToken.Name);
+
+        if (methodToken.IsGeneric)
+            writer.Append($"<{AssemblyConstants.GENERIC_TYPE_NAME}>");
+        
+        writer
+            .AppendFormat(FormatType.OpenParentheses, IndentType.Passive)
+                .Append(parameterKeyword)
+                .Append($"{methodToken.GetMethodKindAsString(classToken.SourceClass, methodToken.IsGeneric)} {PARAMETER_NAME}")
+            .AppendFormat(FormatType.ClosedParentheses, IndentType.Passive);
+
+        if (methodToken.IsGeneric)
+            writer
+                .AppendNewLine()
+                .AppendFormat(FormatType.None, IndentType.Indent)
+                .Append($"where {AssemblyConstants.GENERIC_TYPE_NAME} : {AssemblyConstants.GLOBAL_KEYWORD}{methodToken.GenericTypeName}")
+                .AppendFormat(FormatType.None, IndentType.Outdent);
+        
         return writer;
     }
 }

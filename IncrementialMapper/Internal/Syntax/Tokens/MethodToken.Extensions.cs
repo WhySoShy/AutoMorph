@@ -1,4 +1,5 @@
 ﻿using System;
+using IncrementialMapper.Internal.Constants;
 using IncrementialMapper.Internal.Syntax.Types;
 
 namespace IncrementialMapper.Internal.Syntax.Tokens;
@@ -8,12 +9,12 @@ internal sealed partial record MethodToken
     const string IENUMERABLE = "global::System.Collections.Generic.IEnumerable";
     const string IQUERYABLE = "global::System.Linq.IQueryable";
     
-    internal string GetMethodKindAsString(ReferenceClassToken classToken)
+    internal string GetMethodKindAsString(ReferenceClassToken classToken, bool isGeneric)
         => Type switch
         {
-            MethodType.Standard => $"{classToken.FullPath}",
-            MethodType.Linq => $"{IENUMERABLE}<{classToken.FullPath}>",
-            MethodType.IQueryable => $"{IQUERYABLE}<{classToken.FullPath}>",
+            MethodType.Standard => isGeneric ? AssemblyConstants.GENERIC_TYPE_NAME : classToken.FullPath,
+            MethodType.Linq => $"{IENUMERABLE}<" + (isGeneric ? AssemblyConstants.GENERIC_TYPE_NAME : classToken.FullPath) + ">",
+            MethodType.IQueryable => $"{IQUERYABLE}<" + (isGeneric ? AssemblyConstants.GENERIC_TYPE_NAME : classToken.FullPath) + ">",
             _ => throw new NotSupportedException("This method is not supported.")
         };
     

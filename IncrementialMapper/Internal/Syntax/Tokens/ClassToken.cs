@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using IncrementialMapper.Internal.Constants;
@@ -45,13 +46,13 @@ internal sealed record ClassToken
     /// </summary>
     public List<ModifierKind> Modifiers { get; set; } = [];
 
-    /// <summary>
-    /// <para>
-    ///     Contains the properties that should be mapped, and their target property. <br />
-    ///     This is being used by all the methods.
-    /// </para>
-    /// </summary>
-    public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
+    // /// <summary>
+    // /// <para>
+    // ///     Contains the properties that should be mapped, and their target property. <br />
+    // ///     This is being used by all the methods.
+    // /// </para>
+    // /// </summary>
+    // public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
     /// <summary>
     /// <para>

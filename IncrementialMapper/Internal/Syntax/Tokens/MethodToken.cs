@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using IncrementialMapper.Internal.Syntax.Kinds;
 using IncrementialMapper.Internal.Syntax.Types;
 
@@ -30,4 +31,14 @@ internal sealed partial record MethodToken(
     public MethodType Type { get; } = Type;
     
     public bool IsGeneric { get; set; }
+    
+    public string? GenericTypeName { get; set; }
+    
+    /// <summary>
+    /// <para>
+    ///     Contains the properties that should be mapped, and their target property. <br />
+    ///     This is being used by all the methods.
+    /// </para>
+    /// </summary>
+    public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 }

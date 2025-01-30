@@ -11,4 +11,5 @@ internal static class AssemblyConstants
     internal const string FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE = "IncrementialMapper.Abstractions.Attributes";
     internal const string DEFAULT_NAMESPACE = "IncrementialMapper.Generated.Mappers";
     internal const string GLOBAL_KEYWORD = "global::";
+    internal const string GENERIC_TYPE_NAME = "T";
 }

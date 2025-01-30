@@ -15,7 +15,8 @@ internal static class FormatProvider
         if (indentationType is IndentType.Outdent)
             writer.Indent--;
         
-        writer.Write((char)formatType);
+        if (formatType is not FormatType.None)
+            writer.Write((char)formatType);
         
         if (indentationType is IndentType.Indent)
             writer.Indent++;

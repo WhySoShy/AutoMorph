@@ -1,31 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using IncrementialMapper.Abstractions.Attributes;
-using IncrementialMapper.Internal.Constants;
-using IncrementialMapper.Internal.Generator.Validators;
 using IncrementialMapper.Internal.Syntax.Kinds;
 using IncrementialMapper.Internal.Syntax.Tokens;
 using IncrementialMapper.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace IncrementialMapper.Internal.Generator.GeneratorHelpers;
 
 internal static class MethodHelper
 {
-    internal static List<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, List<ModifierKind> classKinds, string targetClassName)
+    internal static List<MethodToken> GetMethods(INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol, List<ModifierKind> classKinds, string targetClassName, out HashSet<string> nameSpaces)
     {
         List<MethodToken> methods = [];
+        nameSpaces = [];
         
         // Why isn't it returning anything???
         var availableMethods = GetValidMethods(classKinds, sourceSymbol).Where(x => x.symbol is not null);
-
-        var attrClass = sourceSymbol.GetAttributes().Last().AttributeClass;
-        var qualifiedName = nameof(Include).AttributeAsQualifiedName();
-        var attrNameEquals = attrClass.ToDisplayString() == qualifiedName;
-        var baseAttrNameEquals = attrClass.BaseType.ToDisplayString() == qualifiedName;
-        var contains = attrClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName());
         
         // This is the default method name, that is being used when a method is not partial.
         string defaultMethodName = $"MapTo{targetClassName}";
@@ -33,20 +24,28 @@ internal static class MethodHelper
         // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in availableMethods)
         {
-            MethodType methodType = GetMethodType(attribute.symbol);
-            
-            if (methodType is MethodType.None)
+            if (GetMethodType(attribute.symbol) is { } methodType && methodType is MethodType.None)
                 continue;
-
+            
             MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodType,
                 attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
+            
+            nameSpaces = [..nameSpaces, ..generatedToken.HandleGenerics(sourceSymbol, targetSymbol, attribute.symbol.AttributeClass)];
             
             methods.Add(generatedToken);
         }
         
         // Always include the standard mapper unless the user has explicitly told not to.
         if (!sourceSymbol.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()))
-            methods.Add(new MethodToken([classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None], MethodType.Standard, defaultMethodName));
+        {
+            MethodToken token =
+                new MethodToken([classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None],
+                    MethodType.Standard, defaultMethodName);
+
+            nameSpaces = [..nameSpaces, ..token.HandleGenerics(sourceSymbol, targetSymbol, null)];
+            
+            methods.Add(token);
+        }
         
         return methods;
     }
@@ -62,12 +61,12 @@ internal static class MethodHelper
                     .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))
                     .Select(x => (x
                             .GetAttributes()
-                            .FirstOrDefault(y => y.AttributeClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))!, true, x.Name)
+                            .FirstOrDefault(y => y.IsAttribute(nameof(Include).AttributeAsQualifiedName()))!, true, x.Name)
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
-                .Where(x => x.AttributeClass.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))
+                .Where(x => x.IsAttribute(nameof(Include).AttributeAsQualifiedName()))
                 .Select(y => (y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
@@ -89,4 +88,20 @@ internal static class MethodHelper
     static MethodType GetMethodType(AttributeData? attribute)
         // You need to increment the value with 1, else it will give an incorrect value.
         => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
+
+    static HashSet<string> HandleGenerics(this MethodToken generatedToken, INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol, INamedTypeSymbol? attribute)
+    {
+        INamedTypeSymbol? typeArgument = null;
+        // Check if the Attribute contains any type parameters, so we can generate generic mappers for that mapper type instead.
+        if (attribute is not null && attribute.TypeArguments.Any() && attribute.TypeArguments.ElementAt(0) is { } extractedTypeArgument)
+        {
+            typeArgument = extractedTypeArgument as INamedTypeSymbol;
+            generatedToken.IsGeneric = true;
+            generatedToken.GenericTypeName = extractedTypeArgument.ToDisplayString();
+        }
+
+        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, typeArgument ?? targetSymbol, out var newNamespaces);
+        
+        return newNamespaces;
+    }
 }

@@ -6,8 +6,11 @@
 - > Ignore property from mapping
   
 ### Doing:
-- [ ] Generic mapper extensions
+- [x] Generic mapper extensions
 - [x] Change SGMapperAttribute type from parameter to type parameter
+- [ ] Change the tokens to fit better into the structure.
+- [x] Change properties to be contained within each method instead of the whole class.
+- > This change is because of the generic mappers.
 
 ### Analyzer Todo:
 - [ ] Raise warning if there is no parameterless constructor
@@ -40,9 +43,10 @@
 
 
 ### Attribute Ideas:
-- [ ] Order nested collections
 - [ ] Set nesting level
 - [ ] Add support for reverse mapping
+- [ ] Never null
+- > Mark properties as never null, this will provide a default value for the property.
 
 ### Add support for Collections:
 - [ ] Key-Value based collections, like SortedList, Dictionary etc.

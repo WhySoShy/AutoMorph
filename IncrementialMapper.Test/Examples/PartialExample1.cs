@@ -6,7 +6,8 @@ using IncrementialMapper.Abstractions.Enums;
 namespace IncrementialMapper.Test.Examples;
 
 [SGMapper<ExampleTarget>]
-[Include<ExampleTarget>(MapperType.Linq)]
+[Include<IExample>(MapperType.Linq)]
+[Include(MapperType.IQueryable)]
 public class Example
 {
     public string Hello { get; set; } // Auto targets the property ExampleTarget.Hello
@@ -19,4 +20,9 @@ public class ExampleTarget
 {
     public string Hello { get; set; }
     public string Huh { get; set; }
+}
+
+public interface IExample
+{
+    public string Hello { get; set; }
 }
