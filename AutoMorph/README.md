@@ -12,7 +12,10 @@
 > This can be done with generic attributes.
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
 - [ ] Raise warning if the source or target class does not contain any properties.
+- [ ] Raise error if the source property does not contain a visible getter.
+- [ ] Raise error if the target property does not contain a visible setter.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
+- [ ] Raise error if the marked class is an abstract class.
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.

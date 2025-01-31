@@ -21,8 +21,8 @@ internal static class UtilHelper
 
         // Check if either of them are non-accessible to the other.
         // There is no support for inherited classes, and don't think I will implement.
-        if (targetVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.Friend or Accessibility.ProtectedOrFriend ||
-            sourceVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.Friend or Accessibility.ProtectedOrFriend)
+        if (targetVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedOrFriend ||
+            sourceVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedOrFriend)
             return false;
 
         return targetProperty.ContainingAssembly.Equals(sourceProperty.ContainingAssembly, SymbolEqualityComparer.Default);

@@ -17,7 +17,10 @@ internal static class ClassHelper
     
     internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol, Compilation compilation)
     {
-        if (sourceSymbol?.GetTypeParametersFromAttribute<IMapperAttribute>()[0] is not INamedTypeSymbol targetSymbol)
+        if (sourceSymbol?.GetTypeParametersFromAttribute<IMapperAttribute>()[0] is not INamedTypeSymbol targetSymbol || 
+            // Because the generator does not support parameter filled constructors, it should not try to generate on them.
+            !targetSymbol.InstanceConstructors.Any(x => !x.Parameters.Any()) ||
+            sourceSymbol.IsAbstract || targetSymbol.IsAbstract)
             return null;
         
         // Because the generator does not support parameter filled constructors, it should not try to generate on them.

@@ -1,4 +1,5 @@
-﻿Console.ReadLine();
+﻿using AutoMorph.Test.Examples;
 
-int source = 2;
-decimal target = source;
+Console.ReadLine();
+
+Example ex = new Example();

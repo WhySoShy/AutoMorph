@@ -39,7 +39,8 @@ public static partial class PropertyHelper
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
-                foundTargetProperty.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName()) || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
+                foundTargetProperty.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName()) || 
+                !UtilHelper.SymbolsCanReach(foundTargetProperty, property.GetMethod!) || !UtilHelper.SymbolsCanReach(property, foundTargetProperty.SetMethod!)) 
                 continue;
             
             ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty, mapperIsExpressionTree, compilation), foundTargetProperty.GetProperty(property, mapperIsExpressionTree, compilation))
