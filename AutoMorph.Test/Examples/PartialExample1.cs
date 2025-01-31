@@ -8,7 +8,6 @@ namespace AutoMorph.Test.Examples;
 [Mapper<ExampleTarget>]
 [Include(MapperType.Linq)]
 [Include(MapperType.IQueryable)]
-[Exclude]
 public class Example
 {
     public string Hello { get; set; }
