@@ -17,7 +17,13 @@ public static partial class PropertyHelper
     /// <summary>
     /// Gets the properties that is valid according to the attached attributes.
     /// </summary>
-    internal static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, bool mapperIsExpressionTree, out HashSet<string> newNamespaces)
+    internal static HashSet<ReferencePropertyToken> GetValidProperties(
+            INamedTypeSymbol sourceClass, 
+            INamedTypeSymbol targetClass, 
+            bool mapperIsExpressionTree, 
+            Compilation compilation, 
+            out HashSet<string> newNamespaces
+        )
     {
         newNamespaces = [];
         HashSet<ReferencePropertyToken> mappedProperties = [];
@@ -36,9 +42,9 @@ public static partial class PropertyHelper
                 foundTargetProperty.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()) || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
                 continue;
             
-            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty, mapperIsExpressionTree), foundTargetProperty.GetProperty(property, mapperIsExpressionTree))
+            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty, mapperIsExpressionTree, compilation), foundTargetProperty.GetProperty(property, mapperIsExpressionTree, compilation))
                 {
-                    NestedObject = GetNestedPropertyTokens(property, out string? newNamespace)
+                    NestedObject = GetNestedPropertyTokens(property, compilation, out string? newNamespace)
                 };
 
             if (newNamespace is not null)
@@ -73,8 +79,8 @@ public static partial class PropertyHelper
     /// <summary>
     /// Creates a PropertyToken that is being used as data reference to the property reading from.
     /// </summary>
-    static ReferencePropertyToken.Property GetProperty(this IPropertySymbol property, IPropertySymbol targetProperty, bool mapperIsExpressionTree)
+    static ReferencePropertyToken.Property GetProperty(this IPropertySymbol property, IPropertySymbol targetProperty, bool mapperIsExpressionTree, Compilation compilation)
     {
-        return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree));
+        return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree, compilation));
     }
 }

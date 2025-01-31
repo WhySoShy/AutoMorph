@@ -23,6 +23,6 @@ public class MapperGenerator : IIncrementalGenerator
             static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol
         ).Where(static node => node is not null);
         
-        context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()), (spc, source) => OutputGenerator.Begin(spc, source!.Right!, attachDebugger: false));
+        context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()), (spc, source) => OutputGenerator.Begin(spc, source!.Right!, source.Left, attachDebugger: false));
     }
 }

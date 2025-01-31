@@ -13,21 +13,18 @@ public static class ValueCasting
     const string IMPLICIT_NAME = "op_Implicit";
     const string EXPLICIT_NAME = "op_Explicit";
     
-    internal static CastingKind GetCastingKind(this ITypeSymbol sourceType, ITypeSymbol targetType, bool mapperIsExpressionTree)
+    internal static CastingKind GetCastingKind(this ITypeSymbol sourceType, ITypeSymbol targetType, bool mapperIsExpressionTree, Compilation compilation)
     {
         string cacheKey = sourceType.ToDisplayString() + "->" + targetType.ToDisplayString();
         
         // Leverage caching, so we don't need to check for the types all the times.
         if (_castingCache.TryGetValue(cacheKey, out var castingKind) && !mapperIsExpressionTree && (castingKind & (CastingKind.TryParse | CastingKind.TryParseToString)) == 0)
             return castingKind;
-
-        if (castingKind is CastingKind.None)
-            cacheKey = string.Empty;
         
-        if (sourceType.IsDirectCasting(targetType) || sourceType.IsImplicitCasting(targetType))
+        if (sourceType.IsDirectCasting(targetType) || sourceType.IsImplicitCasting(targetType, compilation))
             return CastingKind.Direct.ReturnAndCacheKind(cacheKey);
         
-        if (sourceType.IsExplicitCasting(targetType))
+        if (sourceType.IsExplicitCasting(targetType, compilation))
             return CastingKind.Explicit.ReturnAndCacheKind(cacheKey);
         
         if (targetType.IsStringCasting())
@@ -44,8 +41,8 @@ public static class ValueCasting
     
     static CastingKind ReturnAndCacheKind(this CastingKind kind, string cacheKey)
     {
-        // Don't try to re-add the cached kind
-        if (string.IsNullOrEmpty(cacheKey))
+        // Don't add the cache if it already exists.
+        if (_castingCache.ContainsKey(cacheKey))
             return kind;
         
         _castingCache.Add(cacheKey, kind);
@@ -61,11 +58,11 @@ public static class ValueCasting
     static bool IsDirectCasting(this ITypeSymbol sourceType, ITypeSymbol targetType)
         => SymbolEqualityComparer.Default.Equals(sourceType, targetType);
     
-    static bool IsImplicitCasting(this ITypeSymbol sourceType, ITypeSymbol targetType)
-        => sourceType.AllInterfaces.Any(x => SymbolEqualityComparer.Default.Equals(x, targetType)) || sourceType.GetMembers(IMPLICIT_NAME).ReturnEqualsTarget(targetType);
-    
-    static bool IsExplicitCasting(this ITypeSymbol sourceType, ITypeSymbol targetType)
-        => sourceType.GetMembers(EXPLICIT_NAME).ReturnEqualsTarget(targetType);  
+    static bool IsImplicitCasting(this ITypeSymbol sourceType, ITypeSymbol targetType, Compilation compilation)
+        => compilation.ClassifyCommonConversion(sourceType, targetType) is { IsImplicit: true } || sourceType.GetMembers(IMPLICIT_NAME).ReturnEqualsTarget(targetType);
+
+    static bool IsExplicitCasting(this ITypeSymbol sourceType, ITypeSymbol targetType, Compilation compilation)
+        => compilation.ClassifyCommonConversion(sourceType, targetType) is { Exists: true, IsImplicit: false } || sourceType.GetMembers(EXPLICIT_NAME).ReturnEqualsTarget(targetType);  
     
     static bool IsStringCasting(this ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType is SpecialType.System_String;

@@ -10,7 +10,7 @@ namespace AutoMorph.Internal;
 
 internal static class OutputGenerator
 {
-    public static void Begin(SourceProductionContext context, ImmutableArray<INamedTypeSymbol> foundClasses, bool attachDebugger)
+    public static void Begin(SourceProductionContext context, ImmutableArray<INamedTypeSymbol> foundClasses, Compilation compilation, bool attachDebugger)
     {
         if (!Debugger.IsAttached && attachDebugger)
             Debugger.Launch();
@@ -22,7 +22,7 @@ internal static class OutputGenerator
         // therefor it needs to know the names etc. of the mappers before outputting them.
         
         foreach (INamedTypeSymbol currentClass in foundClasses)
-            ClassHelper.GenerateClassToken(currentClass);
+            ClassHelper.GenerateClassToken(currentClass, compilation);
         
         foreach (ClassToken token in ClassHelper.CachedClasses)
             SourceGenerator.GenerateCode(token, context);

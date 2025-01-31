@@ -22,9 +22,9 @@ internal static class SourceGenerator
                 .AppendNewLine().GenerateSourceClass(token)
             .AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent); // Closes the namespace
         
-        string finalText = writer.InnerWriter.ToString();
+        string finalText = writer.InnerWriter.ToString();   
         
-        // context.AddSource($"MapperFrom{token.SourceClass.Name}To{token.TargetClass.Name}.g.cs", writer.InnerWriter.ToString());
+        context.AddSource($"MapperFrom{token.SourceClass.Name}To{token.TargetClass.Name}.g.cs", writer.InnerWriter.ToString());
     }
 
     static IndentedTextWriter AppendNamespaces(this IndentedTextWriter writer, HashSet<string> usingNamespaces)

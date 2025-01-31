@@ -11,6 +11,8 @@ namespace AutoMorph.Test.Examples;
 [Exclude]
 public class Example
 {
+    public string Hello { get; set; }
+    
     [Property(nameof(ExampleTarget.IntTarget))]
     public decimal SourceDecimal { get; set; } // Auto targets the property ExampleTarget.Hello
     

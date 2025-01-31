@@ -33,10 +33,9 @@ internal static class AttributeHelper
     {
         return sourceSymbol?
             .GetAttributes()
-            .FirstOrDefault(x => 
-                (bool)x.AttributeClass?.AllInterfaces
-                    .Any(y => y.ToDisplayString() == typeof(T).FullName)
-                );
+            .FirstOrDefault(x => x is not null && x.AttributeClass is not null && 
+                x.AttributeClass.AllInterfaces.Any(y => y.ToDisplayString() == typeof(T).FullName)
+            );
     }
 
     internal static bool ContainsAttribute(this ISymbol? source, string fullyQualifiedAttributeName)
