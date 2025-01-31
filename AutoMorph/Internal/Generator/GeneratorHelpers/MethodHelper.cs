@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Internal.Constants;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
@@ -26,7 +28,7 @@ internal static class MethodHelper
         var availableMethods = GetValidMethods(classKinds, sourceSymbol).Where(x => x.symbol is not null);
         
         // This is the default method name, that is being used when a method is not partial.
-        string defaultMethodName = $"MapTo{targetClassName}";
+        string defaultMethodName = sourceSymbol.GetDefaultNameOfMapper(targetSymbol);
         
         // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in availableMethods)
@@ -37,10 +39,17 @@ internal static class MethodHelper
             if (attribute.symbol.AttributeClass is not { } symbolAttribute)
                 continue;
             
-            MethodToken generatedToken = new MethodToken(GetMethodModifiers(attribute.isExternal, classKinds), methodType,
-                attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}")
+            MethodToken generatedToken = new MethodToken(
+                    GetMethodModifiers(
+                            attribute.isExternal, 
+                            classKinds
+                    ), 
+                    methodType, 
+                    attribute.isExternal ? 
+                        attribute.methodName : $"MapTo{targetClassName}"
+                )
             {
-                // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree,
+                // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree for example,
                 // therefor it should default to the Parse() method instead.
                 IsExpressionTree = methodType is MethodType.IQueryable
             };
@@ -122,5 +131,14 @@ internal static class MethodHelper
         generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, typeArgument ?? targetSymbol, generatedToken.IsExpressionTree, compilation, out var newNamespaces);
         
         return newNamespaces;
+    }
+
+    static string GetDefaultNameOfMapper(this INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol)
+    {
+        if (sourceSymbol.GetAttributeFromInterface<IMapperAttribute>() is not { AttributeClass: not null } foundAttribute)
+            return $"MapTo{targetSymbol.Name}";
+
+        return foundAttribute.NamedArguments.FirstOrDefault(x => x.Key.Equals("DefaultMapperName")) is { Value: { Value: not null } } property ? 
+            property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
     }
 }

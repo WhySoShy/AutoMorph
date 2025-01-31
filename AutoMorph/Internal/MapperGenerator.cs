@@ -17,7 +17,7 @@ public class MapperGenerator : IIncrementalGenerator
         // Use ForAttributeWithMetadataName instead of CreateSyntaxProvider for better performance.
         // Reference: https://github.com/dotnet/roslyn/blob/main/docs/features/incremental-generators.cookbook.md#use-forattributewithmetadataname
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            AssemblyConstants.SGMAPPER_FULL_QUALIFIED_METADATA_NAME,
+            AssemblyConstants.MAPPER_FULL_QUALIFIED_METADATA_NAME,
             static (syntaxNode, _) =>
                 syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
             static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol

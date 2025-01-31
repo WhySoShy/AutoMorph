@@ -11,6 +11,11 @@ namespace AutoMorph.Abstractions.Attributes;
 public class MapperAttribute<TTarget> : Attribute, IAttribute, IMapperAttribute
 {
     public string? Key { get; set; }
+    
+    /// <summary>
+    /// The default name that will be applied to each generated mapper, if the mapper is not a partial mapper.  
+    /// </summary>
+    public string? DefaultMapperName { get; set; }
 }
 
 /// <summary>
