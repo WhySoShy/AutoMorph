@@ -7,7 +7,7 @@ namespace AutoMorph.Abstractions.Attributes;
 /// 
 /// </summary>
 /// <typeparam name="TTarget">Target class or interface.</typeparam>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class MapperAttribute<TTarget> : Attribute, IAttribute, IMapperAttribute
 {
     public string? Key { get; set; }

@@ -56,7 +56,7 @@ internal static class MethodHelper
         }
         
         // Always include the standard mapper unless the user has explicitly told not to.
-        if (!sourceSymbol.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()))
+        if (!sourceSymbol.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName()))
         {
             MethodToken token =
                 new MethodToken([!classKinds.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None],
@@ -78,15 +78,15 @@ internal static class MethodHelper
                 sourceSymbol 
                     .GetMembers()
                     // We only need to iterate on the Methods, nothing else.
-                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute(nameof(Include).AttributeAsQualifiedName()))
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))
                     .Select(x => (x
                             .GetAttributes()
-                            .FirstOrDefault(y => y.IsAttribute(nameof(Include).AttributeAsQualifiedName()))!, true, x.Name)
+                            .FirstOrDefault(y => y.IsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))!, true, x.Name)
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
-                .Where(x => x.IsAttribute(nameof(Include).AttributeAsQualifiedName()))
+                .Where(x => x.IsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))
                 .Select(y => (y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.

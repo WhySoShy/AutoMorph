@@ -10,7 +10,7 @@ namespace AutoMorph.Abstractions.Attributes;
 /// </summary>
 /// <param name="key"></param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-public class MarkAsStatic : Attribute, IAttribute
+public class MarkAsStaticAttribute : Attribute, IAttribute
 {
     public string? Key { get; set; }
 }

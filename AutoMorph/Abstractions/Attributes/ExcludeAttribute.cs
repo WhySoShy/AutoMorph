@@ -8,7 +8,7 @@ namespace AutoMorph.Abstractions.Attributes;
 /// Check documentation on how it works.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct)]
-public class Exclude : Attribute, IAttribute
+public class ExcludeAttribute : Attribute, IAttribute
 {
     public string? Key { get; set; }
 }
