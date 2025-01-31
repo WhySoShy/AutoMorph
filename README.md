@@ -1,3 +1,6 @@
+# ATTENTION! 
+> The project is still under construction, therefor it may work but it can still break.
+
 ## AutoMorph
 
 AutoMorph is a .NET Source Generator that simplifies object mapping by generating code based on attributes attached to your classes, structs, and records.
