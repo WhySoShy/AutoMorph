@@ -5,7 +5,7 @@ using AutoMorph.Abstractions.Enums;
 
 namespace AutoMorph.Test.Examples;
 
-[Mapper<ExampleTarget>()]
+[Mapper<ExampleTarget>]
 [Include(MapperType.Linq)]
 [Include(MapperType.IQueryable)]
 [Exclude]

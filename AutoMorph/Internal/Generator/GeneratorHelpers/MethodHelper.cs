@@ -28,7 +28,7 @@ internal static class MethodHelper
         var availableMethods = GetValidMethods(classKinds, sourceSymbol).Where(x => x.symbol is not null);
         
         // This is the default method name, that is being used when a method is not partial.
-        string defaultMethodName = sourceSymbol.GetDefaultNameOfMapper(targetSymbol);
+        string defaultMethodName = sourceSymbol.GetNameOfMapper<IMapperAttribute>(targetSymbol, "DefaultMapperName");
         
         // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in availableMethods)
@@ -38,6 +38,8 @@ internal static class MethodHelper
 
             if (attribute.symbol.AttributeClass is not { } symbolAttribute)
                 continue;
+
+            string nameOfMapper = attribute.isExternal ? attribute.methodName : attribute.symbol.GetNameOfMapper<IIncludeAttribute>(targetSymbol, "MapperName");
             
             MethodToken generatedToken = new MethodToken(
                     GetMethodModifiers(
@@ -133,12 +135,13 @@ internal static class MethodHelper
         return newNamespaces;
     }
 
-    static string GetDefaultNameOfMapper(this INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol)
+    static string GetNameOfMapper<T>(this INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol, string propertyName)
     {
-        if (sourceSymbol.GetAttributeFromInterface<IMapperAttribute>() is not { AttributeClass: not null } foundAttribute)
-            return $"MapTo{targetSymbol.Name}";
-
-        return foundAttribute.NamedArguments.FirstOrDefault(x => x.Key.Equals("DefaultMapperName")) is { Value: { Value: not null } } property ? 
-            property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
+        return sourceSymbol.GetAttributeFromInterface<T>() is not { AttributeClass: not null} foundAttribute ? 
+            $"MapTo{targetSymbol.Name}" : foundAttribute.GetNameOfMapper<T>(targetSymbol, propertyName);
     }
+    
+    static string GetNameOfMapper<T>(this AttributeData attribute, INamedTypeSymbol targetSymbol, string propertyName)
+        => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)) is { Value.Value: not null } property ? 
+            property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
 }
