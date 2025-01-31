@@ -37,7 +37,5 @@ internal record ReferencePropertyToken(
         internal string ValueType { get; } = ValueType;
 
         internal CastingKind Casting { get; } = Casting;
-        
-        internal bool AllowedAsNull { get; }
     }
 }

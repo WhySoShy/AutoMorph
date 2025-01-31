@@ -17,7 +17,7 @@ internal sealed partial record MethodToken(
     /// <summary>
     /// Name of the generated method.
     /// </summary>
-    public string Name { get; } = Name;
+    internal string Name { get; } = Name;
     
     /// <summary>
     /// <para>
@@ -26,11 +26,16 @@ internal sealed partial record MethodToken(
     ///     this just means that it appears in the correct order when assembling the code. 
     /// </para>
     /// </summary>
-    public ModifierKind[] Modifiers { get; } = Modifiers.OrderBy(x => x).ToArray();
+    internal ModifierKind[] Modifiers { get; } = Modifiers.OrderBy(x => x).ToArray();
 
-    public MethodType Type { get; } = Type;
+    internal MethodType Type { get; } = Type;
     
-    public GenericType? Generic { get; set; }
+    internal GenericType? Generic { get; set; }
+    
+    /// <summary>
+    /// Used to determine how type casting will be done within the method.
+    /// </summary>
+    internal bool IsExpressionTree { get; set; }
     
     /// <summary>
     /// <para>
@@ -38,10 +43,10 @@ internal sealed partial record MethodToken(
     ///     This is being used by all the methods.
     /// </para>
     /// </summary>
-    public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
+    internal HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
     internal record GenericType(string TypeName)
     {
-        public string TypeName { get; } = TypeName;
+        internal string TypeName { get; } = TypeName;
     }
 }

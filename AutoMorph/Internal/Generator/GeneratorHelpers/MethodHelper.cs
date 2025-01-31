@@ -31,10 +31,20 @@ internal static class MethodHelper
                 continue;
             
             MethodToken generatedToken = new MethodToken(symbolAttribute.GetMethodModifiers(attribute.isExternal, classKinds), methodType,
-                attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}");
+                attribute.isExternal ? attribute.methodName : $"MapTo{targetClassName}")
+            {
+                // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree,
+                // therefor it should default to the Parse() method instead.
+                IsExpressionTree = methodType is MethodType.IQueryable
+            };
+
+            var namespacesToAppend = generatedToken.HandleGenerics(sourceSymbol, targetSymbol, symbolAttribute);
+
             
-            nameSpaces = [..nameSpaces, ..generatedToken.HandleGenerics(sourceSymbol, targetSymbol, symbolAttribute)];
+            if (!generatedToken.Properties.Any())
+                continue;
             
+            nameSpaces = [..nameSpaces, ..namespacesToAppend];
             methods.Add(generatedToken);
         }
         
@@ -102,7 +112,7 @@ internal static class MethodHelper
             generatedToken.Generic = new MethodToken.GenericType(extractedTypeArgument.ToDisplayString());
         }
 
-        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, typeArgument ?? targetSymbol, out var newNamespaces);
+        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceSymbol, typeArgument ?? targetSymbol, generatedToken.IsExpressionTree, out var newNamespaces);
         
         return newNamespaces;
     }

@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Linq;
 using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Generator.GeneratorHelpers;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Providers.Enums;
 using AutoMorph.Internal.Syntax.Tokens;
@@ -80,7 +81,7 @@ internal static class MethodProvider
             if (property.NestedObject is not null)
                 writer.Append(property.NestedObject.Type.Value.Invoke(property, sourceReference));
             else
-                writer.Append($"{sourceReference}.{property.SourceProperty.Name}");
+                writer.Append(UtilHelper.GetCastingAsString(property.TargetProperty, property.SourceProperty, sourceReference));
 
             if (count < token.Properties.Count)
                 writer

@@ -13,14 +13,17 @@ public static class ValueCasting
     const string IMPLICIT_NAME = "op_Implicit";
     const string EXPLICIT_NAME = "op_Explicit";
     
-    internal static CastingKind GetCastingKind(this ITypeSymbol sourceType, ITypeSymbol targetType)
+    internal static CastingKind GetCastingKind(this ITypeSymbol sourceType, ITypeSymbol targetType, bool mapperIsExpressionTree)
     {
         string cacheKey = sourceType.ToDisplayString() + "->" + targetType.ToDisplayString();
         
         // Leverage caching, so we don't need to check for the types all the times.
-        if (_castingCache.TryGetValue(cacheKey, out var castingKind))
+        if (_castingCache.TryGetValue(cacheKey, out var castingKind) && !mapperIsExpressionTree && (castingKind & (CastingKind.TryParse | CastingKind.TryParseToString)) == 0)
             return castingKind;
 
+        if (castingKind is CastingKind.None)
+            cacheKey = string.Empty;
+        
         if (sourceType.IsDirectCasting(targetType) || sourceType.IsImplicitCasting(targetType))
             return CastingKind.Direct.ReturnAndCacheKind(cacheKey);
         
@@ -30,11 +33,30 @@ public static class ValueCasting
         if (targetType.IsStringCasting())
             return CastingKind.String.ReturnAndCacheKind(cacheKey);
             
-        if (targetType.HasTryParseMethod())
-            return CastingKind.TryParse.ReturnAndCacheKind(cacheKey);
+        if (!mapperIsExpressionTree && targetType.HasTryParseMethod(sourceType) is { hasTryParse: true } tryParseMethod)
+            return (tryParseMethod.useToString ? CastingKind.TryParseToString : CastingKind.TryParse).ReturnAndCacheKind(cacheKey);
+
+        if (targetType.HasParseMethod(sourceType) is { hasParse: true} parseMethod)
+            return (parseMethod.useToString ? CastingKind.ParseToString : CastingKind.Parse).ReturnAndCacheKind(cacheKey);
         
         return CastingKind.Direct;
     }
+    
+    static CastingKind ReturnAndCacheKind(this CastingKind kind, string cacheKey)
+    {
+        // Don't try to re-add the cached kind
+        if (string.IsNullOrEmpty(cacheKey))
+            return kind;
+        
+        _castingCache.Add(cacheKey, kind);
+        
+        return kind;
+    }
+    
+    static bool ReturnEqualsTarget(this ImmutableArray<ISymbol> targetTypes, ITypeSymbol targetType)
+        => targetTypes.OfType<IMethodSymbol>().Any(x => SymbolEqualityComparer.Default.Equals(x.ReturnType, targetType));
+    
+    #region Casting kinds
     
     static bool IsDirectCasting(this ITypeSymbol sourceType, ITypeSymbol targetType)
         => SymbolEqualityComparer.Default.Equals(sourceType, targetType);
@@ -48,25 +70,32 @@ public static class ValueCasting
     static bool IsStringCasting(this ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType is SpecialType.System_String;
     
-    static bool HasTryParseMethod(this ITypeSymbol typeSymbol)
+    static (bool hasTryParse, bool useToString) HasTryParseMethod(this ITypeSymbol typeSymbol, ITypeSymbol sourceType)
     {
-        return typeSymbol.GetMembers("TryParse")
+        var methodType = typeSymbol.GetMembers("TryParse")
             .OfType<IMethodSymbol>()
-            .Any(m =>
-                m.DeclaredAccessibility == Accessibility.Public &&
+            .FirstOrDefault(m =>
+                m.DeclaredAccessibility is Accessibility.Public &&
                 m is { IsStatic: true, ReturnType.SpecialType: SpecialType.System_Boolean, Parameters.Length: >= 2 } &&
-                m.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-                m.Parameters.Any(p => p.RefKind == RefKind.Out && SymbolEqualityComparer.Default.Equals(p.Type, typeSymbol))
+                m.Parameters[0].Type.SpecialType is SpecialType.System_String || SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, sourceType) &&
+                m.Parameters.Any(p => p.RefKind is RefKind.Out && SymbolEqualityComparer.Default.Equals(p.Type, typeSymbol))
             );
+        
+        return (methodType is not null, !SymbolEqualityComparer.Default.Equals(methodType, sourceType) || methodType.Parameters[0].Type.SpecialType is SpecialType.System_String); 
     }
-    
-    static CastingKind ReturnAndCacheKind(this CastingKind kind, string cacheKey)
-    {
-        _castingCache.Add(cacheKey, kind);
 
-        return kind;
+    static (bool hasParse, bool useToString) HasParseMethod(this ITypeSymbol typeSymbol, ITypeSymbol sourceType)
+    {
+        var methodType = typeSymbol.GetMembers("Parse")
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(m => 
+                m.DeclaredAccessibility is Accessibility.Public &&
+                m is { IsStatic: true, Parameters.Length: >= 1} &&
+                m.Parameters.Any(p => SymbolEqualityComparer.Default.Equals(p.Type, sourceType) || p.Type.SpecialType is SpecialType.System_String)
+            );
+
+        return (methodType is not null, !SymbolEqualityComparer.Default.Equals(methodType, sourceType) || methodType.Parameters[0].Type.SpecialType is SpecialType.System_String);
     }
     
-    static bool ReturnEqualsTarget(this ImmutableArray<ISymbol> targetTypes, ITypeSymbol targetType)
-        => targetTypes.OfType<IMethodSymbol>().Any(x => SymbolEqualityComparer.Default.Equals(x.ReturnType, targetType));
+    #endregion
 }

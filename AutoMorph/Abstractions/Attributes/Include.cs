@@ -8,7 +8,7 @@ namespace AutoMorph.Abstractions.Attributes;
 /// The attribute works differently depending on what it is attached to. <br />
 /// Read documentation, to see how it works.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method, AllowMultiple = true)]
 public class Include(MapperType type = MapperType.None) : Attribute, IAttribute
 {
     public string? Key { get; set; }
