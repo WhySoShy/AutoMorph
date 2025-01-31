@@ -15,7 +15,7 @@ internal static class ClassHelper
     /// </summary>
     internal static readonly HashSet<ClassToken> CachedClasses = new();
     
-    internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol)
+    internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol, Compilation compilation)
     {
         if (sourceSymbol?.GetTypeParametersFromAttribute<IMapperAttribute>()[0] is not INamedTypeSymbol targetSymbol)
             return null;
@@ -39,7 +39,7 @@ internal static class ClassHelper
         if (!generatedToken.Modifiers.Any())
             generatedToken.Modifiers = GetModifiers(sourceSymbol);
         
-        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken.Modifiers, targetSymbol.Name, out var newNamespaces) is not { Count: > 0 } methods)
+        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken.Modifiers, targetSymbol.Name, compilation, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
         
         // The methods generated, should be generated no matter what because the class may want more mappers generated, than the cached class has.
@@ -59,7 +59,7 @@ internal static class ClassHelper
         List<ModifierKind> modifiers = [];
 
         // Force the generated class, to be created as a static class.
-        if (sourceSymbol.ContainsAttribute(nameof(MarkAsStatic).AttributeAsQualifiedName()))
+        if (sourceSymbol.ContainsAttribute(nameof(MarkAsStaticAttribute).AttributeAsQualifiedName()))
             return [ModifierKind.Static];
         
         if (sourceSymbol.IsPartial())

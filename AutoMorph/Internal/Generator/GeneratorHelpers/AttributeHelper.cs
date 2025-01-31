@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -23,25 +25,29 @@ internal static class AttributeHelper
             
         return null;
     }
+
+    internal static IEnumerable<TResult> GetPropertiesFromAttribute<TResult>(this INamedTypeSymbol symbol, string fullyQualifiedAttributeName, Func<AttributeData, TResult> getter)
+    {
+        return symbol.GetAttributes().Where(x => x.IsAttribute(fullyQualifiedAttributeName)).Select(getter);
+    }
     
     static AttributeData? GetAttribute<T>(ISymbol? currentClassSymbol)
     {
         return currentClassSymbol?.GetAttributes().FirstOrDefault(x => x.AttributeClass is not null && x.AttributeClass.Name.Equals(typeof(T).Name));
     }
 
-    static AttributeData? GetAttributeFromInterface<T>(this ISymbol? sourceSymbol)
+    internal static AttributeData? GetAttributeFromInterface<T>(this ISymbol? sourceSymbol)
     {
         return sourceSymbol?
             .GetAttributes()
-            .FirstOrDefault(x => 
-                (bool)x.AttributeClass?.AllInterfaces
-                    .Any(y => y.ToDisplayString() == typeof(T).FullName)
-                );
+            .FirstOrDefault(x => x is not null && x.AttributeClass is not null && 
+                x.AttributeClass.AllInterfaces.Any(y => y.ToDisplayString() == typeof(T).FullName)
+            );
     }
 
     internal static bool ContainsAttribute(this ISymbol? source, string fullyQualifiedAttributeName)
     {
-        return source is not null && source.GetAttributes().Any(x => x.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName || x.AttributeClass?.BaseType?.ToDisplayString() == fullyQualifiedAttributeName);
+        return source is not null && source.GetAttributes().Any(x => x.IsAttribute(fullyQualifiedAttributeName));
     }
     
     /// <summary>

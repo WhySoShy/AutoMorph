@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
-using AutoMorph.Internal.Generator.Validators;
+using AutoMorph.Internal.Generator.Casting;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Internal.Syntax.Types;
@@ -17,7 +17,13 @@ public static partial class PropertyHelper
     /// <summary>
     /// Gets the properties that is valid according to the attached attributes.
     /// </summary>
-    internal static HashSet<ReferencePropertyToken> GetValidProperties(INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, out HashSet<string> newNamespaces)
+    internal static HashSet<ReferencePropertyToken> GetValidProperties(
+            INamedTypeSymbol sourceClass, 
+            INamedTypeSymbol targetClass, 
+            bool mapperIsExpressionTree, 
+            Compilation compilation, 
+            out HashSet<string> newNamespaces
+        )
     {
         newNamespaces = [];
         HashSet<ReferencePropertyToken> mappedProperties = [];
@@ -33,12 +39,12 @@ public static partial class PropertyHelper
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
-                foundTargetProperty.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName()) || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
+                foundTargetProperty.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName()) || !UtilHelper.SymbolsCanReach(foundTargetProperty, property))
                 continue;
             
-            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.Name, foundTargetProperty.Name)
+            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty, mapperIsExpressionTree, compilation), foundTargetProperty.GetProperty(property, mapperIsExpressionTree, compilation))
                 {
-                    NestedObject = GetNestedPropertyTokens(property, out string? newNamespace)
+                    NestedObject = GetNestedPropertyTokens(property, compilation, out string? newNamespace)
                 };
 
             if (newNamespace is not null)
@@ -58,7 +64,7 @@ public static partial class PropertyHelper
             .Where(x =>
                 x.Kind == SymbolKind.Property &&
                 // Should never include those properties who have directly excluded themselves.
-                !x.ContainsAttribute(nameof(Exclude).AttributeAsQualifiedName())
+                !x.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName())
             )
             .Select(x => (x as IPropertySymbol)!)
             .ToList() ?? [];
@@ -69,4 +75,12 @@ public static partial class PropertyHelper
             .Where(x => x.Kind == SymbolKind.Property)
             .Select(x => (x as IPropertySymbol)!)
             .ToList();
+
+    /// <summary>
+    /// Creates a PropertyToken that is being used as data reference to the property reading from.
+    /// </summary>
+    static ReferencePropertyToken.Property GetProperty(this IPropertySymbol property, IPropertySymbol targetProperty, bool mapperIsExpressionTree, Compilation compilation)
+    {
+        return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree, compilation));
+    }
 }

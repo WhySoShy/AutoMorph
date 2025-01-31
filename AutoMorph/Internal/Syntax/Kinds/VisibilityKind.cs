@@ -11,8 +11,8 @@ internal enum VisibilityKind
     
     // Don't know if these are being supported.
     // They could technically be supported for partial classes.
-    Protected_Private,
-    Protected_Internal
+    ProtectedPrivate,
+    ProtectedInternal
 }
 
 internal static class VisibilityKindExtensions
@@ -24,6 +24,8 @@ internal static class VisibilityKindExtensions
             VisibilityKind.Protected => "protected",
             VisibilityKind.Internal => "internal",
             VisibilityKind.Private => "private",
+            VisibilityKind.ProtectedInternal => "protected internal",
+            VisibilityKind.ProtectedPrivate => "protected private",
             _ => throw new NotSupportedException("This visibility is not supported.")
         };
 }

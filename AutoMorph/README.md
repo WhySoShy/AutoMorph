@@ -19,6 +19,7 @@
 - [ ] Allow inputted keys, that can be used as reference points on classes when generating.
   - This could allow for more flexibility.
 - [ ] Ensure abstract classes cannot be mapped on.
+- [ ] Ensure the source property is readable, and target property is settable.
 - [ ] Use caching for retrieving GetTypeDeclaration.
 - > This can be used by using [MSBuildWorkspace](https://www.nuget.org/packages/Microsoft.CodeAnalysis.Workspaces.MSBuild)
 
@@ -31,16 +32,14 @@
 - [x] Allow users to pass interfaces or classes, that will be used on generic mappers.
 - [x] Allow nested objects, to be included inside the mappers.
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
-- [ ] Allow the user to set custom names for the mappers through the `MapperAttribute`
-- [ ] Allow mapping from between property types
+- [x] Allow the user to set custom names for the mappers through the `MapperAttribute`
+- [x] Allow mapping from between property types
 - [ ] Config files
 - > This would allow users to set a default mapping configuration, that will be applied to all the mappers within the project or assembly.
 
 ### Attribute Ideas:
 - [ ] Set nesting level
 - [ ] Add support for reverse mapping
-- [ ] Never null
-- > Mark properties as never null, this will provide a default value for the property.
 
 ### Add support for Collections:
 - [ ] Key-Value based collections, like SortedList, Dictionary etc.

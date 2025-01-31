@@ -5,7 +5,7 @@ using AutoMorph.Internal.Syntax.Tokens;
 
 // ReSharper disable InconsistentNaming
 
-namespace AutoMorph.Internal.Generator.Validators;
+namespace AutoMorph.Internal.Generator.Casting;
 
 internal static class ValidCollections
 {
@@ -41,8 +41,8 @@ internal static class ValidCollections
         // Generic Collections
         {QUEUE_GENERIC_COLLECTION, (token, sourceReference) => GetGenericCast(QUEUE_GENERIC_COLLECTION, token, sourceReference)},
         {STACK_GENERIC_COLLECTION, (token, sourceReference) => GetGenericCast(STACK_GENERIC_COLLECTION, token, sourceReference)},
-        {LIST_GENERIC_COLLECTION, (token, sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}().ToList()"},
-        {HASHSET_GENERIC_COLLECTION, (token, sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}().ToHashSet()"},
+        {LIST_GENERIC_COLLECTION, (token, sourceReference) => $"{sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken.Name}().ToList()"},
+        {HASHSET_GENERIC_COLLECTION, (token, sourceReference) => $"{sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken.Name}().ToHashSet()"},
         {LINKEDLIST_GENERIC_COLLECTION, (token, sourceReference) => GetGenericCast(LIST_GENERIC_COLLECTION, token, sourceReference)},
         
         // Concurrent Collections
@@ -59,17 +59,17 @@ internal static class ValidCollections
         {SORTEDSET_IMMUTABLE_COLLECTION, (token, sourceReference) => GetImmutableCast(SORTEDSET_IMMUTABLE_COLLECTION, token, sourceReference)},
         
         // Custom Collection Casts, this is just something that is being used by the Generator itself.
-        {ARRAY_CUSTOM, (token, sourceReference) => $"{sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name}().ToArray()"},
+        {ARRAY_CUSTOM, (token, sourceReference) => $"{sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken.Name}().ToArray()"},
     };
     
     /// <summary>
     /// Can be used by the <see cref="SupportedCollections" /> to reuse the way that the generic collections is being instantiated. 
     /// </summary>
     private static string GetGenericCast(string collectionTypeName, ReferencePropertyToken token, string sourceReference)
-        => $"new {AssemblyConstants.GLOBAL_KEYWORD}{collectionTypeName.Replace("<T>", $"<{AssemblyConstants.GLOBAL_KEYWORD}{token.NestedObject!.Type.Key}>")}({sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken.Name})";
+        => $"new {AssemblyConstants.GLOBAL_KEYWORD}{collectionTypeName.Replace("<T>", $"<{AssemblyConstants.GLOBAL_KEYWORD}{token.NestedObject!.Type.Key}>")}({sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken.Name})";
     
     private static string GetImmutableCast(string collectionTypeName, ReferencePropertyToken token, string sourceReference)
-        => $"{AssemblyConstants.GLOBAL_KEYWORD}{collectionTypeName}.CreateRange({sourceReference}.{token.SourcePropertyName}.{token.NestedObject!.MethodToken!.Name}())";
+        => $"{AssemblyConstants.GLOBAL_KEYWORD}{collectionTypeName}.CreateRange({sourceReference}.{token.SourceProperty.Name}.{token.NestedObject!.MethodToken!.Name}())";
     
     #endregion
 }

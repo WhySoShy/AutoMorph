@@ -7,10 +7,15 @@ namespace AutoMorph.Abstractions.Attributes;
 /// 
 /// </summary>
 /// <typeparam name="TTarget">Target class or interface.</typeparam>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class MapperAttribute<TTarget> : Attribute, IAttribute, IMapperAttribute
 {
     public string? Key { get; set; }
+    
+    /// <summary>
+    /// The default name that will be applied to each generated mapper, if the mapper is not a partial mapper.  
+    /// </summary>
+    public string? DefaultMapperName { get; set; }
 }
 
 /// <summary>
