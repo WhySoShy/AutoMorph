@@ -2,7 +2,7 @@
 - > Mappers can be injected into partial classes.
 - > Mappers can be generated as extension methods.
 - > Mappers can be generated as generic methods, by passing an interface to the `IncludeAttribute`
-- > Properties can map into other properties with different names
+- > Properties can map into other properties with different names``
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
   
