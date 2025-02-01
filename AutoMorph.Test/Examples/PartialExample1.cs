@@ -21,7 +21,7 @@ public class Example
 }
 
 
-public class ExampleTarget : IExample
+public abstract class ExampleTarget : IExample
 {
     public string Hello { get; set; }
 

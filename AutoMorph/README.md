@@ -15,7 +15,7 @@
 - [ ] Raise error if the source property does not contain a visible getter.
 - [ ] Raise error if the target property does not contain a visible setter.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
-- [ ] Raise error if the marked class is an abstract class.
+- [ ] Raise error if the target class is an abstract class.
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.
@@ -42,7 +42,7 @@
 - [ ] Add support for reverse mapping
 
 ### Add support for Collections:
-- [ ] Key-Value based collections, like SortedList, Dictionary etc.
+- [ ] Key-Value based collections, like SortedList, Dictionary etc.``
 
 > Users should be able to mark each attribute with a key, where that key can be used to define what mapper it should be used on. </br >
-> This can be useful if a user wants to use a single `source` and map to multiple classes.
+> This can be useful if a user wants to use a single `source` and map to multiple classes.``

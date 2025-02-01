@@ -130,7 +130,7 @@ internal static class MethodHelper
             typeArgument = (foundTypeArgument as INamedTypeSymbol)!;
             generatedToken.Generic = new MethodToken.GenericType(foundTypeArgument.ToDisplayString(), foundTypeArgument.IsAbstract);
         }
-        else if (targetClass.IsAbstract || sourceClass.IsAbstract)
+        else if (sourceClass.IsAbstract)
             generatedToken.Generic = new MethodToken.GenericType(targetClass.ToDisplayString(), targetClass.IsAbstract);
 
         generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, typeArgument, generatedToken.IsExpressionTree, compilation, out var newNamespaces);
