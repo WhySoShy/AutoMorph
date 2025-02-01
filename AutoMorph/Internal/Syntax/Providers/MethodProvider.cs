@@ -69,10 +69,11 @@ internal static class MethodProvider
         return writer;
     }
 
-    static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, MethodToken token)
+    static IndentedTextWriter AppendProperties(this IndentedTextWriter writer, string sourceReference, MethodToken methodToken)
     {
         int count = 0;
-        foreach (ReferencePropertyToken property in token.Properties)
+        
+        foreach (ReferencePropertyToken property in methodToken.Properties)
         {
             count++;
 
@@ -83,7 +84,7 @@ internal static class MethodProvider
             else
                 writer.Append(UtilHelper.GetCastingAsString(property.TargetProperty, property.SourceProperty, sourceReference));
 
-            if (count < token.Properties.Count)
+            if (count < methodToken.Properties.Count)
                 writer
                     .Append(",")
                     .AppendNewLine();

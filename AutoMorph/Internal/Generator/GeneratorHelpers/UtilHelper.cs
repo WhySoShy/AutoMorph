@@ -29,7 +29,7 @@ internal static class UtilHelper
         bool isInSameAssembly = SymbolEqualityComparer.Default.Equals(targetProperty.ContainingAssembly, sourceProperty.ContainingAssembly);
 
         // If properties are in different assemblies but are both public, they can reach each other
-        if (!isInSameAssembly && targetVisibility is Accessibility.Public && sourceVisibility is Accessibility.Public)
+        if (targetVisibility is Accessibility.Public && sourceVisibility is Accessibility.Public || !isInSameAssembly && targetVisibility is Accessibility.Public && sourceVisibility is Accessibility.Public)
             return true;
         
         // If both properties are internal and in the same assembly, they can reach each other
@@ -62,7 +62,7 @@ internal static class UtilHelper
     /// Transforms a ISymbol into a custom ReferenceClassToken
     /// </summary>
     internal static ReferenceClassToken TransformClass(this ISymbol symbol)
-        => new (symbol.Name, symbol.SymbolAsQualifiedName());
+        => new (symbol.Name, symbol.SymbolAsQualifiedName(), !symbol.IsAbstract);
     
     /// <summary>
     /// Gets the <c>.ToDisplayString()</c> containing the namespace for the symbol.

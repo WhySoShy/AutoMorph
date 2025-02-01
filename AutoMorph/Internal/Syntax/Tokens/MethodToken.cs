@@ -45,8 +45,13 @@ internal sealed partial record MethodToken(
     /// </summary>
     internal HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
-    internal record GenericType(string TypeName)
+    internal record GenericType(string TypeName, bool IsAbstract)
     {
         internal string TypeName { get; } = TypeName;
+        
+        /// <summary>
+        /// If the target is an abstract object or interface, then we should add the <c>new()</c> as a constraint.
+        /// </summary>
+        internal bool IsAbstract { get; } = IsAbstract;
     }
 }

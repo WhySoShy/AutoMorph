@@ -1,5 +1,6 @@
-﻿using AutoMorph.Test.Examples;
-
+﻿// using AutoMorph.Test.Examples;
+// using AutoMorph.Generated.Mappers;
+//
 Console.ReadLine();
-
-Example ex = new Example();
+//
+// new ExampleTarget().MapToExample();
