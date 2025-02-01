@@ -14,25 +14,42 @@ internal static class UtilHelper
     /// <summary>
     /// Checks if the symbols can see each other, determined by their visibility level.
     /// </summary>
-    internal static bool SymbolsCanReach(ISymbol targetProperty, ISymbol sourceProperty)
+    internal static bool SymbolsCanReach(ISymbol? targetProperty, ISymbol? sourceProperty)
     {
+        if (targetProperty is null || sourceProperty is null)
+            return false;
+        
         Accessibility targetVisibility = targetProperty.DeclaredAccessibility;
         Accessibility sourceVisibility = sourceProperty.DeclaredAccessibility;
 
-        // Check if either of them are non-accessible to the other.
-        // There is no support for inherited classes, and don't think I will implement.
-        if (targetVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.Friend or Accessibility.ProtectedOrFriend ||
-            sourceVisibility is Accessibility.NotApplicable or Accessibility.Private or Accessibility.Protected or Accessibility.Friend or Accessibility.ProtectedOrFriend)
+        // If either property is not accessible or has restricted visibility, return false
+        if (IsRestrictedVisibility(targetVisibility) || IsRestrictedVisibility(sourceVisibility))
             return false;
 
-        return targetProperty.ContainingAssembly.Equals(sourceProperty.ContainingAssembly, SymbolEqualityComparer.Default);
+        bool isInSameAssembly = SymbolEqualityComparer.Default.Equals(targetProperty.ContainingAssembly, sourceProperty.ContainingAssembly);
+
+        // If properties are in different assemblies but are both public, they can reach each other
+        if (targetVisibility is Accessibility.Public && sourceVisibility is Accessibility.Public || !isInSameAssembly && targetVisibility is Accessibility.Public && sourceVisibility is Accessibility.Public)
+            return true;
+        
+        // If both properties are internal and in the same assembly, they can reach each other
+        return isInSameAssembly && targetVisibility is Accessibility.Internal && sourceVisibility is Accessibility.Internal;
     }
+    
+    static bool IsRestrictedVisibility(this Accessibility visibility)
+    {
+        return visibility is Accessibility.NotApplicable
+            or Accessibility.Private
+            or Accessibility.Protected
+            or Accessibility.ProtectedOrFriend;
+    }
+
 
     internal static string GetCastingAsString(ReferencePropertyToken.Property targetProperty,
         ReferencePropertyToken.Property sourceProperty, string sourceReference)
         => sourceProperty.Casting switch
         {
-            CastingKind.Direct => $"{sourceReference}.{sourceProperty.Name}",
+            CastingKind.Direct or CastingKind.None => $"{sourceReference}.{sourceProperty.Name}",
             CastingKind.Explicit => $"({targetProperty.ValueType}){sourceReference}.{sourceProperty.Name}",
             CastingKind.String => $"{sourceReference}.{sourceProperty.Name}.ToString()",
             CastingKind.TryParse => $"{targetProperty.ValueType}.TryParse({sourceReference}.{sourceProperty.Name}, out {targetProperty.ValueType} entity) ? entity : default",
@@ -45,7 +62,7 @@ internal static class UtilHelper
     /// Transforms a ISymbol into a custom ReferenceClassToken
     /// </summary>
     internal static ReferenceClassToken TransformClass(this ISymbol symbol)
-        => new (symbol.Name, symbol.SymbolAsQualifiedName());
+        => new (symbol.Name, symbol.SymbolAsQualifiedName(), !symbol.IsAbstract);
     
     /// <summary>
     /// Gets the <c>.ToDisplayString()</c> containing the namespace for the symbol.

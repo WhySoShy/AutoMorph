@@ -19,7 +19,7 @@ public class MapperGenerator : IIncrementalGenerator
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
             AssemblyConstants.MAPPER_FULL_QUALIFIED_METADATA_NAME,
             static (syntaxNode, _) =>
-                syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
+                syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax or InterfaceDeclarationSyntax,
             static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol
         ).Where(static node => node is not null);
         

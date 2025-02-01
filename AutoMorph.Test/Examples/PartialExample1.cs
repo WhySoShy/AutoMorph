@@ -6,13 +6,10 @@ using AutoMorph.Abstractions.Enums;
 namespace AutoMorph.Test.Examples;
 
 [Mapper<ExampleTarget>]
-[Include(MapperType.Linq)]
-[Include(MapperType.IQueryable)]
-[Exclude]
 public class Example
 {
     public string Hello { get; set; }
-    
+
     [Property(nameof(ExampleTarget.IntTarget))]
     public decimal SourceDecimal { get; set; } // Auto targets the property ExampleTarget.Hello
     
@@ -23,14 +20,18 @@ public class Example
     public decimal DecimalSource { get; set; }
 }
 
-public class ExampleTarget
+
+public class ExampleTarget : IExample
 {
+    public string Hello { get; set; }
+
     public int IntTarget { get; set; }
     public decimal DecimalTarget { get; set; }
     
     public string StringTarget { get; set; }
 }
 
+[Mapper<Example>]
 public interface IExample
 {
     public string Hello { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using AutoMorph.Abstractions.Enums;
 using AutoMorph.Internal;
+using AutoMorph.Internal.Constants;
 
 namespace AutoMorph.Abstractions.Attributes;
 
@@ -12,7 +13,7 @@ namespace AutoMorph.Abstractions.Attributes;
 public class IncludeAttribute(MapperType type = MapperType.None) : Attribute, IAttribute, IIncludeAttribute
 {
     public string? Key { get; set; }
-    
+
     public string? MapperName { get; set; }
 }
 

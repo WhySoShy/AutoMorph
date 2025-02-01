@@ -19,9 +19,9 @@ internal static class ClassHelper
     {
         if (sourceSymbol?.GetTypeParametersFromAttribute<IMapperAttribute>()[0] is not INamedTypeSymbol targetSymbol)
             return null;
-        
-        // Because the generator does not support parameter filled constructors, it should not try to generate on them.
-        if (!targetSymbol.InstanceConstructors.Any(x => !x.Parameters.Any()))
+
+        // Check if the target contains an empty constructor so we can use that, because the mapper does not supported parameter filled constructors yet.
+        if (targetSymbol is { TypeKind: TypeKind.Interface, IsAbstract: true } && !targetSymbol.ContainsEmptyConstructor())
             return null;
         
         ClassToken generatedToken = new ()
@@ -39,7 +39,7 @@ internal static class ClassHelper
         if (!generatedToken.Modifiers.Any())
             generatedToken.Modifiers = GetModifiers(sourceSymbol);
         
-        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken.Modifiers, targetSymbol.Name, compilation, out var newNamespaces) is not { Count: > 0 } methods)
+        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken, compilation, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
         
         // The methods generated, should be generated no matter what because the class may want more mappers generated, than the cached class has.
@@ -61,7 +61,7 @@ internal static class ClassHelper
         // Force the generated class, to be created as a static class.
         if (sourceSymbol.ContainsAttribute(nameof(MarkAsStaticAttribute).AttributeAsQualifiedName()))
             return [ModifierKind.Static];
-        
+
         if (sourceSymbol.IsPartial())
             modifiers.Add(ModifierKind.Partial);
         
@@ -70,7 +70,10 @@ internal static class ClassHelper
         
         return modifiers.OrderBy(x => x).ToList();
     }
-
+    
+    /// <summary>
+    /// Gets an existing class token if it exists for the source and target class, if it wasn't found then it will add the generated token.
+    /// </summary>
     static ClassToken GetCachedClass(this ClassToken token)
     {
         if (CachedClasses.FirstOrDefault(x => x.SourceClass.Equals(token.SourceClass) && x.TargetClass.Equals(token.TargetClass)) is { } cachedToken)
@@ -79,4 +82,7 @@ internal static class ClassHelper
         CachedClasses.Add(token);
         return token;
     }
+    
+    static bool ContainsEmptyConstructor(this INamedTypeSymbol symbol)
+        => symbol.InstanceConstructors.Any(x => !x.Parameters.Any());
 }

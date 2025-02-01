@@ -1,4 +1,6 @@
-﻿Console.ReadLine();
-
-int source = 2;
-decimal target = source;
+﻿// using AutoMorph.Test.Examples;
+// using AutoMorph.Generated.Mappers;
+//
+Console.ReadLine();
+//
+// new ExampleTarget().MapToExample();

@@ -2,7 +2,7 @@
 - > Mappers can be injected into partial classes.
 - > Mappers can be generated as extension methods.
 - > Mappers can be generated as generic methods, by passing an interface to the `IncludeAttribute`
-- > Properties can map into other properties with different names
+- > Properties can map into other properties with different names``
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
   
@@ -12,14 +12,14 @@
 > This can be done with generic attributes.
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
 - [ ] Raise warning if the source or target class does not contain any properties.
+- [ ] Raise error if the source property does not contain a visible getter.
+- [ ] Raise error if the target property does not contain a visible setter.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
+- [ ] Raise error if the marked class is an abstract class.
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.
-- [ ] Allow inputted keys, that can be used as reference points on classes when generating.
-  - This could allow for more flexibility.
-- [ ] Ensure abstract classes cannot be mapped on.
-- [ ] Ensure the source property is readable, and target property is settable.
+- [x] Ensure the source property is readable, and target property is settable.
 - [ ] Use caching for retrieving GetTypeDeclaration.
 - > This can be used by using [MSBuildWorkspace](https://www.nuget.org/packages/Microsoft.CodeAnalysis.Workspaces.MSBuild)
 
