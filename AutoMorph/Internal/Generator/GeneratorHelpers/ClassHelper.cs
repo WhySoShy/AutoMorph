@@ -21,7 +21,7 @@ internal static class ClassHelper
             return null;
 
         // Check if the target contains an empty constructor so we can use that, because the mapper does not supported parameter filled constructors yet.
-        if (targetSymbol is { TypeKind: TypeKind.Interface, IsAbstract: true } && !targetSymbol.ContainsEmptyConstructor())
+        if (targetSymbol is { IsAbstract: true } || !targetSymbol.ContainsEmptyConstructor())
             return null;
         
         ClassToken generatedToken = new ()
