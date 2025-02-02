@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AutoMorph.Abstractions.Attributes;
-using AutoMorph.Internal.Constants;
-using AutoMorph.Internal.Syntax.Kinds;
-using AutoMorph.Internal.Syntax.Tokens;
-using AutoMorph.Internal.Syntax.Types;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Types;
+using AutoMorph.Internal.Syntax.Tokens;
+using AutoMorph.Abstractions.Attributes;
 
 namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
@@ -22,21 +20,24 @@ internal static class MethodHelper
         List<MethodToken> methods = [];
         nameSpaces = [];
         
-        // Go through each attribute, and check if it is a valid attribute.
         foreach (var attribute in GetValidMethods(classToken.Modifiers, sourceClass))
         {
-            if (attribute.symbol is not { AttributeClass: not null } || GetMethodType(attribute.symbol) is var methodType && methodType is MethodType.None)
+            AttributeData attributeData = attribute.AttributeData;
+            
+            if (attributeData is not { AttributeClass: not null } || GetMethodType(attributeData) is var methodType && methodType is MethodType.None)
+                continue;
+            
+            // It shouldn't continue if there is no empty constructors, because the generator does not support parameter filled constructors yet.
+            if (attributeData.AttributeClass is not { InstanceConstructors.IsEmpty: false } ||
+                attributeData.AttributeClass.TypeArguments[0] is not INamedTypeSymbol targetClass)
                 continue;
 
-            // It shouldn't continue if there is no empty constructors, because the generator does not support parameter filled constructors yet.
-            if (attribute.symbol.AttributeClass is { InstanceConstructors.IsEmpty: false } ||
-                attribute.symbol.AttributeClass.TypeArguments[0] is not INamedTypeSymbol targetClass)
-                continue;
+            string? methodKey = attributeData.GetValueOfNamedArgument<string>("Key");
             
-            string nameOfMapper = attribute.isExternal ? attribute.methodName : sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
+            string nameOfMapper = attribute.IsExternal ? attribute.MethodName : sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
             
             MethodToken generatedToken = new MethodToken(
-                    GetMethodModifiers(attribute.isExternal, classToken.Modifiers), 
+                    GetMethodModifiers(attribute.IsExternal, classToken.Modifiers), 
                     methodType, 
                     nameOfMapper
                 )
@@ -47,7 +48,7 @@ internal static class MethodHelper
                 TargetClass = targetClass.TransformClass()
             };
 
-            var namespacesToAppend = generatedToken.HandleGenerics(sourceClass, targetClass, attribute.symbol, compilation);
+            var namespacesToAppend = HandleGenerics(generatedToken, sourceClass, targetClass, attributeData, compilation, methodKey);
             
             if (!generatedToken.Properties.Any())
                 continue;
@@ -59,7 +60,9 @@ internal static class MethodHelper
         return methods;
     }
     
-    static IEnumerable<(AttributeData symbol, bool isExternal, string methodName)> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
+
+    /// <returns>All relevant attributes attached to methods or the source class.</returns>
+    static IEnumerable<ValidMethod> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
         => [
             // Get the methods that have Included attributes on them and is Partial if the class is marked as partial.
             // If the class has not been marked as partial, then it makes no sense to get methods that is maybe included.
@@ -67,16 +70,18 @@ internal static class MethodHelper
                 sourceSymbol 
                     .GetMembers()
                     // We only need to iterate on the Methods, nothing else.
-                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttributeInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))
-                    .Select(x => (x
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttributeInterface<IIncludeAttribute>())
+                    .Select(x => x
                             .GetAttributes()
-                            .FirstOrDefault(y => y.IsAttributeOfInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))!, true, x.Name)
+                            .Where(y => y.IsAttributeOfInterface<IIncludeAttribute>())
+                            .Select(y => new ValidMethod(y, true, x.Name))
+                            .FirstOrDefault()
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
-                .Where(x => x.IsAttributeOfInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))
-                .Select(y => (y, false, string.Empty))!
+                .Where(x => x.IsAttributeOfInterface<IIncludeAttribute>())
+                .Select(y => new ValidMethod(y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
         ];
@@ -98,12 +103,12 @@ internal static class MethodHelper
         // You need to increment the value with 1, else it will give an incorrect value.
         => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
 
-    static HashSet<string> HandleGenerics(this MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation)
+    static HashSet<string> HandleGenerics(MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation, string? methodKey)
     {
         if (sourceClass.IsAbstract || attribute.GetValueOfNamedArgument<bool>("IsGeneric"))
             generatedToken.Generic = new MethodToken.GenericType(sourceClass.ToDisplayString());
 
-        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, targetClass, generatedToken.IsExpressionTree, compilation, out var newNamespaces);
+        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, targetClass, generatedToken.IsExpressionTree, compilation, methodKey, out var newNamespaces);
         
         return newNamespaces;
     }
@@ -117,7 +122,9 @@ internal static class MethodHelper
     static string GetNameOfMapper<T>(this AttributeData attribute, INamedTypeSymbol targetSymbol, string propertyName)
         => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)) is { Value.Value: not null } property ? 
             property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
-
-    static T? GetValueOfNamedArgument<T>(this AttributeData attribute, string propertyName)
-        => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)).Value.Value is T value ? value : default;
+    
+    /// <summary>
+    /// This is just used for a clear visualization of the attached attributes that are relevant for the generator.
+    /// </summary>
+    record ValidMethod(AttributeData AttributeData, bool IsExternal, string MethodName);
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using AutoMorph.Internal;
+using AutoMorph.Internal.Constants;
 
 namespace AutoMorph.Abstractions.Attributes;
 
@@ -10,7 +12,10 @@ namespace AutoMorph.Abstractions.Attributes;
 /// </summary>
 /// <param name="key"></param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-public class MarkAsStaticAttribute : Attribute, IAttribute
+[Conditional(AssemblyConstants.EXCLUDED_CONDITIONAL_NAME)]
+public class MarkAsStaticAttribute : Attribute, IAttribute, IMarkAsStaticAttribute
 {
     public string? Key { get; set; }
 }
+
+internal interface IMarkAsStaticAttribute;

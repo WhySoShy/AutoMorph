@@ -30,27 +30,17 @@ internal static class AttributeHelper
                                  x.AttributeClass.AllInterfaces.Any(y => y.ToDisplayString() == typeof(T).FullName)
             );
     }
-
-    internal static bool ContainsAttribute(this ISymbol? source, string fullyQualifiedAttributeName)
-    {
-        return source is not null && source.GetAttributes().Any(x => x.IsAttribute(fullyQualifiedAttributeName));
-    }
     
-    /// <summary>
-    /// Checks if an attribute is of type <see cref="fullyQualifiedAttributeName"/> or its base type is of type.
-    /// </summary>
-    internal static bool IsAttribute(this AttributeData source, string fullyQualifiedAttributeName)
+    internal static T? GetValueOfNamedArgument<T>(this AttributeData attribute, string argumentName)
+        => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(argumentName)).Value.Value is T value ? value : default;
+    
+    internal static bool IsAttributeOfInterface<T>(this AttributeData source)
     {
-        return source.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName || source.AttributeClass?.BaseType?.ToDisplayString() == fullyQualifiedAttributeName;
+        return (bool)source.AttributeClass?.AllInterfaces.Any(x => x.ToDisplayString() == typeof(T).FullName);
     }
 
-    internal static bool IsAttributeOfInterface(this AttributeData source, string attributeInterfaceName)
+    internal static bool ContainsAttributeInterface<T>(this ISymbol? source)
     {
-        return (bool)source.AttributeClass?.AllInterfaces.Any(x => x.ToDisplayString() == attributeInterfaceName);
-    }
-
-    internal static bool ContainsAttributeInterface(this ISymbol? source, string fullyQualifiedInterfaceName)
-    {
-        return (bool)source?.GetAttributes().Any(x => x.IsAttributeOfInterface(fullyQualifiedInterfaceName));
+        return (bool)source?.GetAttributes().Any(x => x.IsAttributeOfInterface<T>());
     }
 }

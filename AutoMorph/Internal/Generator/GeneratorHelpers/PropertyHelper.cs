@@ -22,6 +22,7 @@ public static partial class PropertyHelper
             INamedTypeSymbol targetClass, 
             bool mapperIsExpressionTree, 
             Compilation compilation, 
+            string? methodKey,
             out HashSet<string> newNamespaces
         )
     {
@@ -29,7 +30,7 @@ public static partial class PropertyHelper
         HashSet<ReferencePropertyToken> mappedProperties = [];
 
         // Get the source and target properties, according to the rules set by the attached (if any) attributes.
-        if (sourceClass.GetSourceProperties() is not { Count: > 0 } sourceProperties || targetClass.GetTargetProperties() is not { Count: > 0 } targetProperties)
+        if (sourceClass.GetSourceProperties(methodKey) is not { Count: > 0 } sourceProperties || targetClass.GetTargetProperties(methodKey) is not { Count: > 0 } targetProperties)
             return [];
         
         foreach (IPropertySymbol property in sourceProperties)
@@ -39,7 +40,7 @@ public static partial class PropertyHelper
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
-                foundTargetProperty.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName()) || 
+                foundTargetProperty.ContainsAttributeInterface<ExcludeAttribute>() || 
                 !UtilHelper.SymbolsCanReach(foundTargetProperty, property.GetMethod!) || !UtilHelper.SymbolsCanReach(property, foundTargetProperty.SetMethod!)) 
                 continue;
             
@@ -59,18 +60,18 @@ public static partial class PropertyHelper
         return mappedProperties;
     }
     
-    static List<IPropertySymbol> GetSourceProperties(this INamedTypeSymbol sourceClass) 
+    static List<IPropertySymbol> GetSourceProperties(this INamedTypeSymbol sourceClass, string? methodKey) 
         => sourceClass
             .GetMembers()
             .Where(x =>
                 x.Kind == SymbolKind.Property &&
                 // Should never include those properties who have directly excluded themselves.
-                !x.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName())
+                !x.ContainsAttributeInterface<ExcludeAttribute>()
             )
             .Select(x => (x as IPropertySymbol)!)
             .ToList() ?? [];
     
-    static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass)
+    static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass, string? methodKey)
         => targetClass
             .GetMembers()
             .Where(x => x.Kind == SymbolKind.Property)

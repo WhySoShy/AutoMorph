@@ -1,9 +1,11 @@
 ﻿using System;
-using AutoMorph.Internal;
+using System.Diagnostics;
+using AutoMorph.Internal.Constants;
 
 namespace AutoMorph.Abstractions.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface)]
+[Conditional(AssemblyConstants.EXCLUDED_CONDITIONAL_NAME)]
 public class MapperAttribute : Attribute, IMapperAttribute
 {
     /// <summary>

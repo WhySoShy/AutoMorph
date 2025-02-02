@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using AutoMorph.Abstractions.Enums;
+using AutoMorph.Internal;
+using AutoMorph.Internal.Constants;
 
 namespace AutoMorph.Abstractions.Attributes;
 
@@ -8,8 +11,11 @@ namespace AutoMorph.Abstractions.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method,
     AllowMultiple = true)]
-public class IncludeAttribute<T>(MapperType type = MapperType.None) : Attribute, IIncludeAttribute
+[Conditional(AssemblyConstants.EXCLUDED_CONDITIONAL_NAME)]
+public class IncludeAttribute<T>(MapperType type = MapperType.None) : Attribute, IIncludeAttribute, IAttribute
 {
+    
+    public string? Key { get; set; }
     public bool IsGeneric { get; set; }
 }
 

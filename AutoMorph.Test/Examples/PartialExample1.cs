@@ -31,7 +31,7 @@ public abstract class ExampleTarget : IExample
 }
 
 [Mapper]
-[Include<Example>(MapperType.Standard, IsGeneric = true)]
+[Include<Example>(MapperType.Standard, IsGeneric = true, Key = "Test")]
 public interface IExample
 {
     public string Hello { get; set; }

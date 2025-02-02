@@ -54,7 +54,7 @@ internal static class ClassHelper
         List<ModifierKind> modifiers = [];
 
         // Force the generated class, to be created as a static class.
-        if (sourceSymbol.ContainsAttribute(nameof(MarkAsStaticAttribute).AttributeAsQualifiedName()))
+        if (sourceSymbol.ContainsAttributeInterface<IMarkAsStaticAttribute>())
             return [ModifierKind.Static];
 
         if (sourceSymbol.IsPartial())
