@@ -21,11 +21,11 @@ internal sealed record ClassToken
     /// What the generator should create the mappers to map from.
     /// </summary>
     public ReferenceClassToken SourceClass { get; set; }
-
-    /// <summary>
-    /// What the generator should create the mappers to map to.
-    /// </summary>
-    public ReferenceClassToken TargetClass { get; set; }
+    //
+    // /// <summary>
+    // /// What the generator should create the mappers to map to.
+    // /// </summary>
+    // public ReferenceClassToken TargetClass { get; set; }
 
     /// <summary>
     /// The namespace that the mapper should be generated into.

@@ -5,7 +5,6 @@ using AutoMorph.Abstractions.Enums;
 
 namespace AutoMorph.Test.Examples;
 
-[Mapper<ExampleTarget>]
 public class Example
 {
     public string Hello { get; set; }
@@ -31,7 +30,8 @@ public abstract class ExampleTarget : IExample
     public string StringTarget { get; set; }
 }
 
-[Mapper<Example>]
+[Mapper]
+[Include<Example>(MapperType.Standard, IsGeneric = true)]
 public interface IExample
 {
     public string Hello { get; set; }

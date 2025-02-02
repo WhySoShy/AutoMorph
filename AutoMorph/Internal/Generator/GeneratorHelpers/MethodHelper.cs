@@ -14,7 +14,6 @@ internal static class MethodHelper
 {
     internal static List<MethodToken> GetMethods(
             INamedTypeSymbol sourceClass, 
-            INamedTypeSymbol targetClass, 
             ClassToken classToken,
             Compilation compilation, 
             out HashSet<string> nameSpaces
@@ -23,60 +22,38 @@ internal static class MethodHelper
         List<MethodToken> methods = [];
         nameSpaces = [];
         
-        // Why isn't it returning anything???
-        var availableMethods = GetValidMethods(classToken.Modifiers, sourceClass).Where(x => x.symbol is not null);
-        
-        // This is the default method name, that is being used when a method is not partial.
-        string defaultMethodName = sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "DefaultMapperName");
-        
         // Go through each attribute, and check if it is a valid attribute.
-        foreach (var attribute in availableMethods)
+        foreach (var attribute in GetValidMethods(classToken.Modifiers, sourceClass))
         {
-            if (GetMethodType(attribute.symbol) is { } methodType && methodType is MethodType.None)
+            if (attribute.symbol is not { AttributeClass: not null } || GetMethodType(attribute.symbol) is var methodType && methodType is MethodType.None)
                 continue;
 
-            if (attribute.symbol.AttributeClass is not { } symbolAttribute)
+            // It shouldn't continue if there is no empty constructors, because the generator does not support parameter filled constructors yet.
+            if (attribute.symbol.AttributeClass is { InstanceConstructors.IsEmpty: false } ||
+                attribute.symbol.AttributeClass.TypeArguments[0] is not INamedTypeSymbol targetClass)
                 continue;
-
-            string nameOfMapper = attribute.isExternal ? attribute.methodName : attribute.symbol.GetNameOfMapper<IIncludeAttribute>(targetClass, "MapperName");
+            
+            string nameOfMapper = attribute.isExternal ? attribute.methodName : sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
             
             MethodToken generatedToken = new MethodToken(
-                    GetMethodModifiers(
-                            attribute.isExternal, 
-                            classToken.Modifiers
-                    ), 
+                    GetMethodModifiers(attribute.isExternal, classToken.Modifiers), 
                     methodType, 
                     nameOfMapper
                 )
             {
                 // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree for example,
                 // therefor it should default to the Parse() method instead.
-                IsExpressionTree = methodType is MethodType.IQueryable
+                IsExpressionTree = methodType is MethodType.IQueryable,
+                TargetClass = targetClass.TransformClass()
             };
 
-            var namespacesToAppend = generatedToken.HandleGenerics(sourceClass, targetClass, symbolAttribute, compilation);
-
+            var namespacesToAppend = generatedToken.HandleGenerics(sourceClass, targetClass, attribute.symbol, compilation);
             
             if (!generatedToken.Properties.Any())
                 continue;
             
             nameSpaces = [..nameSpaces, ..namespacesToAppend];
             methods.Add(generatedToken);
-        }
-        
-        // Always include the standard mapper unless the user has explicitly told not to.
-        if (sourceClass.ContainsAttribute(nameof(ExcludeAttribute).AttributeAsQualifiedName())) 
-            return methods;
-
-        var standardMapperToken = CreateStandardMapper(sourceClass, classToken, defaultMethodName);
-
-        HashSet<string> newNamespaces = standardMapperToken.HandleGenerics(sourceClass, targetClass, null, compilation);
-
-        if (standardMapperToken.Properties.Any())
-        {
-            nameSpaces = [.. nameSpaces, .. newNamespaces];
-        
-            methods.Add(standardMapperToken);
         }
 
         return methods;
@@ -90,15 +67,15 @@ internal static class MethodHelper
                 sourceSymbol 
                     .GetMembers()
                     // We only need to iterate on the Methods, nothing else.
-                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))
+                    .Where(x => x.Kind == SymbolKind.Method && x.ContainsAttributeInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))
                     .Select(x => (x
                             .GetAttributes()
-                            .FirstOrDefault(y => y.IsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))!, true, x.Name)
+                            .FirstOrDefault(y => y.IsAttributeOfInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))!, true, x.Name)
                     ) : []!)!,
             
             .. sourceSymbol
                 .GetAttributes()
-                .Where(x => x.IsAttribute(nameof(IncludeAttribute).AttributeAsQualifiedName()))
+                .Where(x => x.IsAttributeOfInterface(nameof(IIncludeAttribute).AttributeAsQualifiedName()))
                 .Select(y => (y, false, string.Empty))!
             
             // TODO: Find a way to make this less hard-coded.
@@ -121,19 +98,12 @@ internal static class MethodHelper
         // You need to increment the value with 1, else it will give an incorrect value.
         => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
 
-    static HashSet<string> HandleGenerics(this MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, INamedTypeSymbol? attribute, Compilation compilation)
+    static HashSet<string> HandleGenerics(this MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation)
     {
-        INamedTypeSymbol typeArgument = targetClass;
-        
-        if (attribute is { TypeArguments.IsEmpty: false } && attribute.TypeArguments[0] is { } foundTypeArgument)  
-        {
-            typeArgument = (foundTypeArgument as INamedTypeSymbol)!;
-            generatedToken.Generic = new MethodToken.GenericType(foundTypeArgument.ToDisplayString(), foundTypeArgument.IsAbstract);
-        }
-        else if (sourceClass.IsAbstract)
-            generatedToken.Generic = new MethodToken.GenericType(targetClass.ToDisplayString(), targetClass.IsAbstract);
+        if (sourceClass.IsAbstract || attribute.GetValueOfNamedArgument<bool>("IsGeneric"))
+            generatedToken.Generic = new MethodToken.GenericType(sourceClass.ToDisplayString());
 
-        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, typeArgument, generatedToken.IsExpressionTree, compilation, out var newNamespaces);
+        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, targetClass, generatedToken.IsExpressionTree, compilation, out var newNamespaces);
         
         return newNamespaces;
     }
@@ -143,23 +113,11 @@ internal static class MethodHelper
         return sourceSymbol.GetAttributeFromInterface<T>() is not { AttributeClass: not null} foundAttribute ? 
             $"MapTo{targetSymbol.Name}" : foundAttribute.GetNameOfMapper<T>(targetSymbol, propertyName);
     }
-
-    static MethodToken CreateStandardMapper(INamedTypeSymbol sourceClass, ClassToken classToken, string defaultMethodName)
-    {
-        MethodToken token =
-            new MethodToken(
-                [!classToken.Modifiers.Contains(ModifierKind.None) ? ModifierKind.Static : ModifierKind.None],
-                MethodType.Standard, 
-                defaultMethodName
-            );
-        
-        if (!classToken.SourceClass.CanCreateInstance)
-            token.Generic = new MethodToken.GenericType(sourceClass.ToDisplayString(), true);
-        
-        return token;
-    }
     
     static string GetNameOfMapper<T>(this AttributeData attribute, INamedTypeSymbol targetSymbol, string propertyName)
         => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)) is { Value.Value: not null } property ? 
             property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
+
+    static T? GetValueOfNamedArgument<T>(this AttributeData attribute, string propertyName)
+        => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)).Value.Value is T value ? value : default;
 }

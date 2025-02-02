@@ -20,6 +20,11 @@ internal sealed partial record MethodToken(
     internal string Name { get; } = Name;
     
     /// <summary>
+    /// What the generator should create the mappers to map to.
+    /// </summary>
+    internal ReferenceClassToken TargetClass { get; set; }
+    
+    /// <summary>
     /// <para>
     ///     Modifiers that should be added to the method. <br />
     ///     Auto orders, to keep the 'heaviest' modifiers first,
@@ -45,13 +50,11 @@ internal sealed partial record MethodToken(
     /// </summary>
     internal HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
-    internal record GenericType(string TypeName, bool IsAbstract)
+    internal record GenericType(string ConstraintTypeName)
     {
-        internal string TypeName { get; } = TypeName;
-        
         /// <summary>
-        /// If the target is an abstract object or interface, then we should add the <c>new()</c> as a constraint.
+        /// The constraint that will be applied on the generated method.
         /// </summary>
-        internal bool IsAbstract { get; } = IsAbstract;
+        internal string ConstraintTypeName { get; } = ConstraintTypeName;
     }
 }

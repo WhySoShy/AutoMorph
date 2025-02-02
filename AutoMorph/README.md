@@ -2,7 +2,7 @@
 - > Mappers can be injected into partial classes.
 - > Mappers can be generated as extension methods.
 - > Mappers can be generated as generic methods, by passing an interface to the `IncludeAttribute`
-- > Properties can map into other properties with different names``
+- > Properties can map into other properties with different names
 - > Current supported mapper types -> IEnumerable, IQueryable, Object
 - > Ignore property from mapping
   
@@ -12,6 +12,7 @@
 > This can be done with generic attributes.
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
 - [ ] Raise warning if the source or target class does not contain any properties.
+- [ ] Raise Info if the source class is of abstract type, and `IsGeneric` is set to true.
 - [ ] Raise error if the source property does not contain a visible getter.
 - [ ] Raise error if the target property does not contain a visible setter.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
@@ -27,12 +28,12 @@
 - [ ] Add support for Internal, protected, internal protected classes.
 - [ ] Add support for Dictionaries
 - [ ] Add support for parameter filled constructors
+- [ ] Nested objects should be able to be created as type parameters
 
 ### Generator Ideas:
 - [x] Allow users to pass interfaces or classes, that will be used on generic mappers.
 - [x] Allow nested objects, to be included inside the mappers.
  > The mapper generates a mapper for the nested object, this allows for deep nesting within an object.
-- [x] Allow the user to set custom names for the mappers through the `MapperAttribute`
 - [x] Allow mapping from between property types
 - [ ] Config files
 - > This would allow users to set a default mapping configuration, that will be applied to all the mappers within the project or assembly.

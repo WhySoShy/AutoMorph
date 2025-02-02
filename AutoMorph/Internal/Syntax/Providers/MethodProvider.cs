@@ -21,7 +21,7 @@ internal static class MethodProvider
             writer
                 .AppendMethodHeader(methodToken, classToken)
                 .AppendNewLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent) // Open the method body
-                    .AppendNewLine().AppendMethodBody(methodToken, classToken)
+                    .AppendNewLine().AppendMethodBody(methodToken)
                 .AppendNewLine().AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent); // Close the method body
             
             if (classToken.Methods.Count < methodCount)
@@ -37,7 +37,7 @@ internal static class MethodProvider
     /// <summary>
     /// Appends the return type of <see cref="MethodType"/>
     /// </summary>
-    static IndentedTextWriter AppendMethodBody(this IndentedTextWriter writer, MethodToken methodToken, ClassToken token)
+    static IndentedTextWriter AppendMethodBody(this IndentedTextWriter writer, MethodToken methodToken)
     {
         // This is the reference used, to map from the source class to the target class.
         // This will always be either x or source, depending on the return type.
@@ -52,7 +52,7 @@ internal static class MethodProvider
             writer.Append($"{PARAMETER_NAME}.Select({sourceReference} => ");
         
         writer
-            .Append($"new {token.TargetClass.FullPath}()")
+            .Append($"new {methodToken.TargetClass.FullPath}()")
             .AppendNewLine().AppendFormat(FormatType.OpenCurlyBraces, IndentType.Indent).AppendNewLine()
             .AppendProperties(sourceReference, methodToken).AppendNewLine();
 
@@ -103,7 +103,7 @@ internal static class MethodProvider
         writer
             .Append($"{visibility}{methodModifier}")
             // It still returns the target type
-            .Append(methodToken.GetMethodKindAsString(classToken.TargetClass, false) + " " + methodToken.Name);
+            .Append(methodToken.GetMethodKindAsString(methodToken.TargetClass, false) + " " + methodToken.Name);
     
         if (isGenericType)
             writer.Append($"<{AssemblyConstants.GENERIC_TYPE_NAME}>");
@@ -118,7 +118,7 @@ internal static class MethodProvider
             writer
                 .AppendNewLine()
                 .AppendFormat(FormatType.None, IndentType.Indent)
-                .Append($"where {AssemblyConstants.GENERIC_TYPE_NAME} : {AssemblyConstants.GLOBAL_KEYWORD}{methodToken.Generic!.TypeName}")
+                .Append($"where {AssemblyConstants.GENERIC_TYPE_NAME} : {AssemblyConstants.GLOBAL_KEYWORD}{methodToken.Generic!.ConstraintTypeName}")
                 .AppendFormat(FormatType.None, IndentType.Outdent);
         
         return writer;

@@ -17,17 +17,12 @@ internal static class ClassHelper
     
     internal static ClassToken? GenerateClassToken(INamedTypeSymbol? sourceSymbol, Compilation compilation)
     {
-        if (sourceSymbol?.GetTypeParametersFromAttribute<IMapperAttribute>()[0] is not INamedTypeSymbol targetSymbol)
-            return null;
-
-        // Check if the target contains an empty constructor so we can use that, because the mapper does not supported parameter filled constructors yet.
-        if (targetSymbol is { IsAbstract: true } || !targetSymbol.ContainsEmptyConstructor())
+        if (sourceSymbol is null)
             return null;
         
         ClassToken generatedToken = new ()
         {
             SourceClass = sourceSymbol.TransformClass(),
-            TargetClass = targetSymbol.TransformClass(),
             Visibility = VisibilityKind.Public // This could technically change if the class was a partial class.
         };
         
@@ -39,7 +34,7 @@ internal static class ClassHelper
         if (!generatedToken.Modifiers.Any())
             generatedToken.Modifiers = GetModifiers(sourceSymbol);
         
-        if (MethodHelper.GetMethods(sourceSymbol, targetSymbol, generatedToken, compilation, out var newNamespaces) is not { Count: > 0 } methods)
+        if (MethodHelper.GetMethods(sourceSymbol, generatedToken, compilation, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
         
         // The methods generated, should be generated no matter what because the class may want more mappers generated, than the cached class has.
@@ -76,7 +71,7 @@ internal static class ClassHelper
     /// </summary>
     static ClassToken GetCachedClass(this ClassToken token)
     {
-        if (CachedClasses.FirstOrDefault(x => x.SourceClass.Equals(token.SourceClass) && x.TargetClass.Equals(token.TargetClass)) is { } cachedToken)
+        if (CachedClasses.FirstOrDefault(x => x.SourceClass.Equals(token.SourceClass)) is { } cachedToken)
             return cachedToken;
         
         CachedClasses.Add(token);

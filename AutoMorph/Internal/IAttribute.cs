@@ -6,5 +6,4 @@
 /// <param name="key">Used to define what mapper it should map to.</param>
 internal interface IAttribute
 {
-    string? Key { get; }
 }
