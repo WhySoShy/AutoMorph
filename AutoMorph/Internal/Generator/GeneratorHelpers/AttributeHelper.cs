@@ -17,7 +17,7 @@ internal static class AttributeHelper
         return null;
     }
     
-    internal static AttributeData? GetAttribute<T>(ISymbol? currentClassSymbol)
+    internal static AttributeData? GetAttribute<T>(this ISymbol? currentClassSymbol)
     {
         return currentClassSymbol?.GetAttributes().FirstOrDefault(x => x.AttributeClass is not null && x.AttributeClass.Name.Equals(typeof(T).Name));
     }

@@ -12,6 +12,8 @@ namespace AutoMorph.Abstractions.Attributes;
 public class PropertyAttribute(string nameOfTargetProperty) : Attribute, IAttribute, IPropertyAttribute
 {
     public string? Key { get; set; }
+    
+    internal string NameOfTargetProperty { get; set; } = nameOfTargetProperty;
 }
 
 /// <summary>

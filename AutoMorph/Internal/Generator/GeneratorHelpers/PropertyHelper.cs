@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
 using AutoMorph.Internal.Generator.Casting;
@@ -30,13 +31,21 @@ public static partial class PropertyHelper
         HashSet<ReferencePropertyToken> mappedProperties = [];
 
         // Get the source and target properties, according to the rules set by the attached (if any) attributes.
-        if (sourceClass.GetSourceProperties(methodKey) is not { Count: > 0 } sourceProperties || targetClass.GetTargetProperties(methodKey) is not { Count: > 0 } targetProperties)
+        if (sourceClass.GetSourceProperties() is not { Count: > 0 } sourceProperties || targetClass.GetTargetProperties() is not { Count: > 0 } targetProperties)
             return [];
         
         foreach (IPropertySymbol property in sourceProperties)
         {
+            var foundPropertyAttribute = property.GetAttributeFromInterface<IPropertyAttribute>();
+            var properties = foundPropertyAttribute?.NamedArguments ?? [ ];
+            
             // Ensure that the target is either set by the property name or specially set by the user.
-            string nameOfTargetProperty = AttributeHelper.GetTargetFromAttribute<string, PropertyAttribute>(property) ?? property.Name;
+            string nameOfTargetProperty = foundPropertyAttribute?.ConstructorArguments[0].Value as string ?? property.Name; // namedArguments?.FirstOrDefault(x => x.Key.Equals("NameOfTargetProperty")).Value.Value as string ?? 
+
+            // Check if the key of the property, matches the key of the declared mapper.
+            // If not, it shouldn't continue. If the key is not present on the property, then it should be used as a global property, and be applied on all mappers on the source.
+            if (properties.FirstOrDefault(x => x.Key.Equals("Key")).Value is { Value: string key } && methodKey != key)
+                continue;
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
@@ -60,7 +69,7 @@ public static partial class PropertyHelper
         return mappedProperties;
     }
     
-    static List<IPropertySymbol> GetSourceProperties(this INamedTypeSymbol sourceClass, string? methodKey) 
+    static List<IPropertySymbol> GetSourceProperties(this INamedTypeSymbol sourceClass) 
         => sourceClass
             .GetMembers()
             .Where(x =>
@@ -71,7 +80,7 @@ public static partial class PropertyHelper
             .Select(x => (x as IPropertySymbol)!)
             .ToList() ?? [];
     
-    static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass, string? methodKey)
+    static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass)
         => targetClass
             .GetMembers()
             .Where(x => x.Kind == SymbolKind.Property)
@@ -85,4 +94,6 @@ public static partial class PropertyHelper
     {
         return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree, compilation));
     }
+
+    record Argument(string PropertyName, object Value);
 }
