@@ -43,4 +43,13 @@ internal static class AttributeHelper
     {
         return (bool)source?.GetAttributes().Any(x => x.IsAttributeOfInterface<T>());
     }
+
+    /// <summary>
+    /// Gets the attached attribute of type <see cref="T"/>
+    /// </summary>
+    /// <typeparam name="T">Interface of the attribute</typeparam>
+    internal static string? GetKeyFromAttribute<T>(this ISymbol symbol)
+    {
+        return symbol.GetAttributeFromInterface<T>()?.NamedArguments.FirstOrDefault(x => x.Key.Equals("Key")).Value.Value as string;
+    }
 }

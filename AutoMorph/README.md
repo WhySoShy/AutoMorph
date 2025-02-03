@@ -29,6 +29,7 @@
 - [ ] Add support for Dictionaries
 - [ ] Add support for parameter filled constructors
 - [ ] Nested objects should be able to be created as type parameters
+- [ ] Add support for Partial static classes.
 
 ### Generator Ideas:
 - [x] Allow users to pass interfaces or classes, that will be used on generic mappers.

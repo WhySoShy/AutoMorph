@@ -54,6 +54,7 @@ internal static class ClassHelper
         List<ModifierKind> modifiers = [];
 
         // Force the generated class, to be created as a static class.
+        // When it is being forced, it cannot be a partial class because there is no support for it.
         if (sourceSymbol.ContainsAttributeInterface<IMarkAsStaticAttribute>())
             return [ModifierKind.Static];
 
@@ -77,7 +78,4 @@ internal static class ClassHelper
         CachedClasses.Add(token);
         return token;
     }
-    
-    static bool ContainsEmptyConstructor(this INamedTypeSymbol symbol)
-        => symbol.InstanceConstructors.Any(x => !x.Parameters.Any());
 }

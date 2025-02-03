@@ -101,7 +101,7 @@ internal static class MethodHelper
 
     static MethodType GetMethodType(AttributeData? attribute)
         // You need to increment the value with 1, else it will give an incorrect value.
-        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None)+1;
+        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None);
 
     static HashSet<string> HandleGenerics(MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation, string? methodKey)
     {

@@ -6,22 +6,14 @@ using AutoMorph.Abstractions.Enums;
 namespace AutoMorph.Test.Examples;
 
 [Mapper]
-[Include<ExampleTarget>(MapperType.Linq)]
-public class Example
+[Include<TargetClass>(MapperType.Standard)]
+public class SourceClass
 {
-    public string Hello { get; set; }
-
-    [Property(nameof(ExampleTarget.IntTarget), Key = "ExampleTarget")]
-    public decimal SourceDecimal { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
 }
 
-
-public class ExampleTarget
+public class TargetClass 
 {
-    public string Hello { get; set; }
-
-    public int IntTarget { get; set; }
-    public decimal DecimalTarget { get; set; }
-    
-    public string StringTarget { get; set; }
+    public string Name { get; set; }
 }
