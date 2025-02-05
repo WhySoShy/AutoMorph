@@ -9,10 +9,9 @@ namespace AutoMorph.Abstractions.Attributes;
 /// <summary>
 /// This allows the use of generic mappers, pass an interface, class, struct or record to create the mapper with that restriction.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method,
-    AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = true)]
 [Conditional(AssemblyConstants.EXCLUDED_CONDITIONAL_NAME)]
-public class IncludeAttribute<T>(MapperType type = MapperType.None) : Attribute, IIncludeAttribute, IAttribute
+public class IncludeAttribute<T>(MapperType type, MappingStrategy strategy = MappingStrategy.Normal) : Attribute, IIncludeAttribute, IAttribute
 {
     public string? MapperName { get; set; }
     public string? Key { get; set; }

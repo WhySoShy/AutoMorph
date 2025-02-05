@@ -5,6 +5,7 @@ using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Types;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Abstractions.Enums;
 
 namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
@@ -102,9 +103,11 @@ internal static class MethodHelper
     }
 
     static MethodType GetMethodType(AttributeData? attribute)
-        // You need to increment the value with 1, else it will give an incorrect value.
-        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == "MapperType").Value ?? MethodType.None);
-
+        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameof(MapperType)).Value ?? MethodType.None);
+    
+    static MappingStrategy GetMappingStrategy(AttributeData? attribute)
+        => (MappingStrategy)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameof(MappingStrategy)).Value ?? MappingStrategy.Normal);
+    
     static HashSet<string> HandleGenerics(MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation, string? methodKey)
     {
         if (sourceClass.IsAbstract || attribute.GetValueOfNamedArgument<bool>("IsGeneric"))

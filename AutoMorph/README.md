@@ -44,7 +44,9 @@
 
 ### Attribute Ideas:
 - [ ] Set nesting level
+- > Allows the user to define how deep the mapper should map nested objects.
 - [ ] Add support for reverse mapping
+- > Allows the user to define all the mappers within a DTO rather than inside the DB Entity.
 
 ### Add support for Collections:
 - [ ] Key-Value based collections, like SortedList, Dictionary etc.``
