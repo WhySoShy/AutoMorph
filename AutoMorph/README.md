@@ -13,15 +13,18 @@
 - [ ] Raise warning on attributes, if a class is not marked as partial, but they are trying to include a partial method.
 - [ ] Raise warning if the source or target class does not contain any properties.
 - [ ] Raise Info if the source class is of abstract type, and `IsGeneric` is set to true.
+- [ ] Raise Info if the PropertyAttribute is redundant, due to the naming of the target and source property.
+- [ ] Raise Info if the `MapperName` within the `IncludeAttribute` is set, while the attribute is attached to a method. 
 - [ ] Raise error if the source property does not contain a visible getter.
 - [ ] Raise error if the target property does not contain a visible setter.
 - [ ] Raise error if nested object that should be mapped is not marked to be generated.
 - [ ] Raise error if the target class is an abstract class.
+- [ ] Raise error if source and target is set to generate the same mapper type, without setting a name for at least one of them.
 
 ### Generator Todo:
 - [X] Switch ModifierKind from Array to List, ReadonlyList or HashSet.
 - [x] Ensure the source property is readable, and target property is settable.
-- [ ] Use caching for retrieving GetTypeDeclaration.
+- [ ] Use caching for retrieving GetTypeDeclaration. And other things like `MethodHelper.cs:L37`
 - > This can be used by using [MSBuildWorkspace](https://www.nuget.org/packages/Microsoft.CodeAnalysis.Workspaces.MSBuild)
 
 ### Support Todo:

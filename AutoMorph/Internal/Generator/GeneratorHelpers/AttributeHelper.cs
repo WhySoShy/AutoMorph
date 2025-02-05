@@ -8,20 +8,6 @@ namespace AutoMorph.Internal.Generator.GeneratorHelpers;
 
 internal static class AttributeHelper
 {
-    internal static TReturn? GetTargetFromAttribute<TReturn, TAttribute>(ISymbol? currentClassSymbol)
-        where TReturn : class
-    {
-        if (currentClassSymbol is not null && GetAttribute<TAttribute>(currentClassSymbol) is { ConstructorArguments.Length: >= 0 } attributeData)
-            return attributeData.ConstructorArguments[0].Value as TReturn;
-            
-        return null;
-    }
-    
-    internal static AttributeData? GetAttribute<T>(this ISymbol? currentClassSymbol)
-    {
-        return currentClassSymbol?.GetAttributes().FirstOrDefault(x => x.AttributeClass is not null && x.AttributeClass.Name.Equals(typeof(T).Name));
-    }
-
     internal static AttributeData? GetAttributeFromInterface<T>(this ISymbol? sourceSymbol)
     {
         return sourceSymbol?
@@ -48,7 +34,7 @@ internal static class AttributeHelper
     /// Gets the attached attribute of type <see cref="T"/>
     /// </summary>
     /// <typeparam name="T">Interface of the attribute</typeparam>
-    internal static string? GetKeyFromAttribute<T>(this ISymbol symbol)
+    internal static string? GetKeyFromAttributeInterface<T>(this ISymbol symbol)
     {
         return symbol.GetAttributeFromInterface<T>()?.NamedArguments.FirstOrDefault(x => x.Key.Equals("Key")).Value.Value as string;
     }

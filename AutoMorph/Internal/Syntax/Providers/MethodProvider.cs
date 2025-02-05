@@ -24,7 +24,7 @@ internal static class MethodProvider
                     .AppendNewLine().AppendMethodBody(methodToken)
                 .AppendNewLine().AppendFormat(FormatType.ClosedCurlyBraces, IndentType.Outdent); // Close the method body
             
-            if (classToken.Methods.Count < methodCount)
+            if (classToken.Methods.Count <= methodCount)
                 continue;
             
             methodCount++;

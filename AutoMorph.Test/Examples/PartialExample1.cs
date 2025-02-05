@@ -6,14 +6,20 @@ using AutoMorph.Abstractions.Enums;
 namespace AutoMorph.Test.Examples;
 
 [Mapper]
-[Include<TargetClass>(MapperType.Standard)]
+[Include<TargetClass>(MapperType.Standard, Key = "standardMapper")]
+[Include<TargetClass>(MapperType.Standard, Key = "linqMapper", MapperName = "StandardMapper2")]
 public class SourceClass
 {
     public string Name { get; set; }
+    
+    [Property(nameof(TargetClass.PersonAge), Key = "linqMapper")]
+    [Exclude]
     public int Age { get; set; }
 }
 
 public class TargetClass 
 {
     public string Name { get; set; }
+    public int PersonAge { get; set; }
+    public int Age { get; set; }
 }

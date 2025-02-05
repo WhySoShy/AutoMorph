@@ -33,8 +33,10 @@ internal static class MethodHelper
                 continue;
 
             string? methodKey = attributeData.GetValueOfNamedArgument<string>("Key");
-            
-            string nameOfMapper = attribute.IsExternal ? attribute.MethodName : sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
+
+            string nameOfMapper = attribute.IsExternal
+                ? attribute.MethodName
+                : attributeData.GetValueOfNamedArgument<string>("MapperName") ?? sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
             
             MethodToken generatedToken = new MethodToken(
                     GetMethodModifiers(attribute.IsExternal, classToken.Modifiers), 
@@ -116,10 +118,10 @@ internal static class MethodHelper
     static string GetNameOfMapper<T>(this INamedTypeSymbol sourceSymbol, INamedTypeSymbol targetSymbol, string propertyName)
     {
         return sourceSymbol.GetAttributeFromInterface<T>() is not { AttributeClass: not null} foundAttribute ? 
-            $"MapTo{targetSymbol.Name}" : foundAttribute.GetNameOfMapper<T>(targetSymbol, propertyName);
+            $"MapTo{targetSymbol.Name}" : foundAttribute.GetNameOfMapper(targetSymbol, propertyName);
     }
     
-    static string GetNameOfMapper<T>(this AttributeData attribute, INamedTypeSymbol targetSymbol, string propertyName)
+    static string GetNameOfMapper(this AttributeData attribute, INamedTypeSymbol targetSymbol, string propertyName)
         => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(propertyName)) is { Value.Value: not null } property ? 
             property.Value.Value.ToString() : $"MapTo{targetSymbol.Name}";
     

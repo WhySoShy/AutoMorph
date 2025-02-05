@@ -39,13 +39,13 @@ public static partial class PropertyHelper
             var foundPropertyAttribute = property.GetAttributeFromInterface<IPropertyAttribute>();
             var properties = foundPropertyAttribute?.NamedArguments ?? [ ];
             
-            // Ensure that the target is either set by the property name or specially set by the user.
-            string nameOfTargetProperty = foundPropertyAttribute?.ConstructorArguments[0].Value as string ?? property.Name;
-
             // Check if the key of the property, matches the key of the declared mapper.
             // If not, it shouldn't continue. If the key is not present on the property, then it should be used as a global property, and be applied on all mappers on the source.
             if (properties.FirstOrDefault(x => x.Key.Equals("Key")).Value is { Value: string key } && methodKey != key)
                 continue;
+            
+            // Ensure that the target is either set by the property name or specially set by the user.
+            string nameOfTargetProperty = foundPropertyAttribute?.ConstructorArguments[0].Value as string ?? property.Name;
             
             // Ensure that the target is found, not excluded and visible to the source property.
             if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
@@ -73,7 +73,7 @@ public static partial class PropertyHelper
             .GetMembers()
             .Where(x => x.Kind is SymbolKind.Property && x.ExcludeProperty(methodKey))
             .Select(x => (x as IPropertySymbol)!)
-            .ToList() ?? [];
+            .ToList();
     
     static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass)
         => targetClass
@@ -95,7 +95,7 @@ public static partial class PropertyHelper
     /// </summary>
     static bool ExcludeProperty(this ISymbol property, string? methodKey)
     {
-        string? foundExcludeKey = property.GetKeyFromAttribute<IExcludeAttribute>();
+        string? foundExcludeKey = property.GetKeyFromAttributeInterface<IExcludeAttribute>();
 
         // If the exclude key is present, that means the property will probably be ignored.
         // if the exclude attribute is present without any key, then the property should just get ignored by all mappers.

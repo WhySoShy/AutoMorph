@@ -14,7 +14,7 @@ namespace AutoMorph.Abstractions.Attributes;
 [Conditional(AssemblyConstants.EXCLUDED_CONDITIONAL_NAME)]
 public class IncludeAttribute<T>(MapperType type = MapperType.None) : Attribute, IIncludeAttribute, IAttribute
 {
-    
+    public string? MapperName { get; set; }
     public string? Key { get; set; }
     public bool IsGeneric { get; set; }
 }
