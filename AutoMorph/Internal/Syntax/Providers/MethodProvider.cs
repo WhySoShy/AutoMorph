@@ -111,7 +111,7 @@ internal static class MethodProvider
         writer
             .AppendFormat(FormatType.OpenParentheses, IndentType.Passive)
                 .Append(parameterKeyword)
-                .Append($"{methodToken.GetMethodKindAsString(classToken.AttachedSourceClass, isGenericType)} {PARAMETER_NAME}")
+                .Append($"{methodToken.GetMethodKindAsString(methodToken.SourceClass, isGenericType)} {PARAMETER_NAME}")
             .AppendFormat(FormatType.ClosedParentheses, IndentType.Passive);
 
         if (isGenericType)
