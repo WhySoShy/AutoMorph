@@ -6,7 +6,7 @@ using AutoMorph.Abstractions.Enums;
 namespace AutoMorph.Test.Examples;
 
 [Mapper]
-[Include<TargetClass>(MapperType.Standard, Key = "standardMapper")]
+[Include<TargetClass>(MapperType.Standard, MappingStrategy.Both, Key = "standardMapper", IsGeneric = true)]
 [Include<TargetClass>(MapperType.Standard, Key = "linqMapper", MapperName = "StandardMapper2")]
 public class SourceClass
 {

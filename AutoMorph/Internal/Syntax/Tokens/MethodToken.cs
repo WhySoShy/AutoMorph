@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using AutoMorph.Abstractions.Enums;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Types;
 
@@ -15,32 +16,26 @@ internal sealed partial record MethodToken(
     )
 {
     /// <summary>
-    /// Name of the generated method.
+    /// What the generator should create the mappers to map from.
     /// </summary>
-    internal string Name { get; } = Name;
+    public ReferenceClassToken SourceClass { get; init; }
     
     /// <summary>
     /// What the generator should create the mappers to map to.
     /// </summary>
-    internal ReferenceClassToken TargetClass { get; set; }
-    
-    /// <summary>
-    /// <para>
-    ///     Modifiers that should be added to the method. <br />
-    ///     Auto orders, to keep the 'heaviest' modifiers first,
-    ///     this just means that it appears in the correct order when assembling the code. 
-    /// </para>
-    /// </summary>
-    internal ModifierKind[] Modifiers { get; } = Modifiers.OrderBy(x => x).ToArray();
-
-    internal MethodType Type { get; } = Type;
+    internal ReferenceClassToken TargetClass { get; init; }
     
     internal GenericType? Generic { get; set; }
     
     /// <summary>
     /// Used to determine how type casting will be done within the method.
     /// </summary>
-    internal bool IsExpressionTree { get; set; }
+    internal bool IsExpressionTree { get; init; }
+    
+    /// <summary>
+    /// Used to determine how the properties are being processed.
+    /// </summary>
+    internal MappingStrategy MappingStrategy { get; init; }
     
     /// <summary>
     /// <para>
@@ -50,11 +45,5 @@ internal sealed partial record MethodToken(
     /// </summary>
     internal HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
-    internal record GenericType(string ConstraintTypeName)
-    {
-        /// <summary>
-        /// The constraint that will be applied on the generated method.
-        /// </summary>
-        internal string ConstraintTypeName { get; } = ConstraintTypeName;
-    }
+    internal record GenericType(string ConstraintTypeName);
 }

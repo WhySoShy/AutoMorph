@@ -22,7 +22,7 @@ internal static class ClassHelper
         
         ClassToken generatedToken = new ()
         {
-            SourceClass = sourceSymbol.TransformClass(),
+            AttachedSourceClass = sourceSymbol.TransformClass(),
             Visibility = VisibilityKind.Public // This could technically change if the class was a partial class.
         };
         
@@ -72,7 +72,7 @@ internal static class ClassHelper
     /// </summary>
     static ClassToken GetCachedClass(this ClassToken token)
     {
-        if (CachedClasses.FirstOrDefault(x => x.SourceClass.Equals(token.SourceClass)) is { } cachedToken)
+        if (CachedClasses.FirstOrDefault(x => x.AttachedSourceClass.Equals(token.AttachedSourceClass)) is { } cachedToken)
             return cachedToken;
         
         CachedClasses.Add(token);

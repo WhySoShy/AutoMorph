@@ -11,7 +11,7 @@ internal static class ClassProvider
 {
     internal static IndentedTextWriter GenerateSourceClass(this IndentedTextWriter writer, ClassToken token)
     {
-        string generatorClassName = token.Modifiers.Any(x => x is ModifierKind.Partial) ? $"{token.SourceClass.Name}" : $"GeneratedMapper_{token.SourceClass.Name}";
+        string generatorClassName = token.Modifiers.Any(x => x is ModifierKind.Partial) ? $"{token.AttachedSourceClass.Name}" : $"GeneratedMapper_{token.AttachedSourceClass.Name}";
         
         writer
             .Append(token.Visibility!.ToReadAbleString() + " ")

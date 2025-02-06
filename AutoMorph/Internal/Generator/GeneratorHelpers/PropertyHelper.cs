@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Abstractions.Enums;
 using AutoMorph.Internal.Generator.Casting;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
@@ -19,9 +20,9 @@ public static partial class PropertyHelper
     /// Gets the properties that is valid according to the attached attributes.
     /// </summary>
     internal static HashSet<ReferencePropertyToken> GetValidProperties(
+            MethodToken generatedToken,
             INamedTypeSymbol sourceClass, 
             INamedTypeSymbol targetClass, 
-            bool mapperIsExpressionTree, 
             Compilation compilation, 
             string? methodKey,
             out HashSet<string> newNamespaces
@@ -31,7 +32,8 @@ public static partial class PropertyHelper
         HashSet<ReferencePropertyToken> mappedProperties = [];
 
         // Get the source and target properties, according to the rules set by the attached (if any) attributes.
-        if (sourceClass.GetSourceProperties(methodKey) is not { Count: > 0 } sourceProperties || targetClass.GetTargetProperties() is not { Count: > 0 } targetProperties)
+        if ((generatedToken.MappingStrategy is MappingStrategy.Normal ? sourceClass : targetClass).GetSourceProperties(methodKey) is not { Count: > 0 } sourceProperties || 
+            (generatedToken.MappingStrategy is MappingStrategy.Normal ? targetClass : sourceClass).GetTargetProperties() is not { Count: > 0 } targetProperties)
             return [];
         
         foreach (IPropertySymbol property in sourceProperties)
@@ -52,7 +54,10 @@ public static partial class PropertyHelper
                 !UtilHelper.SymbolsCanReach(foundTargetProperty, property.GetMethod!) || !UtilHelper.SymbolsCanReach(property, foundTargetProperty.SetMethod!)) 
                 continue;
             
-            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(property.GetProperty(foundTargetProperty, mapperIsExpressionTree, compilation), foundTargetProperty.GetProperty(property, mapperIsExpressionTree, compilation))
+            ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(
+                    property.GetProperty(foundTargetProperty, generatedToken.IsExpressionTree, compilation), 
+                    foundTargetProperty.GetProperty(property, generatedToken.IsExpressionTree, compilation)
+                )
                 {
                     NestedObject = GetNestedPropertyTokens(property, compilation, out string? newNamespace)
                 };

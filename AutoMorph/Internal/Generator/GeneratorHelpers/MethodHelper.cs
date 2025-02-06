@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using AutoMorph.Internal.Syntax.Kinds;
@@ -31,39 +32,75 @@ internal static class MethodHelper
             // It shouldn't continue if there is no empty constructors, because the generator does not support parameter filled constructors yet.
             if (attributeData.AttributeClass is not { InstanceConstructors.IsEmpty: false } ||
                 attributeData.AttributeClass.TypeArguments[0] is not INamedTypeSymbol targetClass)
-                continue;
+                return [];
 
-            string? methodKey = attributeData.GetValueOfNamedArgument<string>("Key");
-
-            string nameOfMapper = attribute.IsExternal
-                ? attribute.MethodName
-                : attributeData.GetValueOfNamedArgument<string>("MapperName") ?? sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
-            
-            MethodToken generatedToken = new MethodToken(
-                    GetMethodModifiers(attribute.IsExternal, classToken.Modifiers), 
-                    methodType, 
-                    nameOfMapper
-                )
+            nameSpaces = GetMappingStrategy(attributeData) switch
             {
-                // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree for example,
-                // therefor it should default to the Parse() method instead.
-                IsExpressionTree = methodType is MethodType.IQueryable,
-                TargetClass = targetClass.TransformClass()
+                MappingStrategy.Both => [
+                    ..nameSpaces, 
+                    ..CreateMethod(sourceClass, targetClass, classToken, methodType, attribute, methods, compilation, MappingStrategy.Normal),
+                    ..CreateMethod(targetClass, sourceClass, classToken, methodType, attribute, methods, compilation, MappingStrategy.Reverse),
+                ],
+                MappingStrategy.Reverse => [
+                    ..nameSpaces,
+                ],
+                _ => [
+                    ..nameSpaces, 
+                    ..CreateMethod(sourceClass, targetClass, classToken, methodType, attribute, methods, compilation, MappingStrategy.Normal)
+                ],
             };
-
-            var namespacesToAppend = HandleGenerics(generatedToken, sourceClass, targetClass, attributeData, compilation, methodKey);
-            
-            if (!generatedToken.Properties.Any())
-                continue;
-            
-            nameSpaces = [..nameSpaces, ..namespacesToAppend];
-            methods.Add(generatedToken);
         }
 
         return methods;
     }
-    
 
+    /// <summary>
+    /// Generates 
+    /// </summary>
+    /// <returns>Hashset of Namespaces, that needs to be added as usings.</returns>
+    static HashSet<string> CreateMethod(
+        INamedTypeSymbol sourceClass, 
+        INamedTypeSymbol targetClass,
+        ClassToken classToken,
+        MethodType methodType, 
+        ValidMethod validMethod, 
+        List<MethodToken> generatedMethods, 
+        Compilation compilation,
+        MappingStrategy mappingStrategy
+    )
+    {
+        AttributeData attributeData = validMethod.AttributeData;
+        
+        string? methodKey = attributeData.GetValueOfNamedArgument<string>("Key");
+
+        string nameOfMapper = validMethod.IsExternal
+            ? validMethod.MethodName
+            : attributeData.GetValueOfNamedArgument<string>("MapperName") ?? sourceClass.GetNameOfMapper<IMapperAttribute>(targetClass, "MapperName");
+            
+        MethodToken generatedToken = new MethodToken(
+            GetMethodModifiers(validMethod.IsExternal, classToken.Modifiers), 
+            methodType, 
+            nameOfMapper
+        )
+        {
+            // There is a difference in how the mapper should type cast, it cannot use the TryParse() method if it is an expression tree for example,
+            // therefor it should default to the Parse() method instead.
+            IsExpressionTree = methodType is MethodType.IQueryable,
+            TargetClass = targetClass.TransformClass(),
+            SourceClass = sourceClass.TransformClass(),
+            MappingStrategy = mappingStrategy
+        };
+
+        var namespacesToAppend = HandleGenerics(generatedToken, sourceClass, targetClass, attributeData, compilation, methodKey);
+            
+        if (!generatedToken.Properties.Any())
+            return [];
+            
+        generatedMethods.Add(generatedToken);
+        
+        return namespacesToAppend;
+    }
+    
     /// <returns>All relevant attributes attached to methods or the source class.</returns>
     static IEnumerable<ValidMethod> GetValidMethods(List<ModifierKind> classKinds, INamedTypeSymbol sourceSymbol)
         => [
@@ -103,7 +140,8 @@ internal static class MethodHelper
     }
 
     static MethodType GetMethodType(AttributeData? attribute)
-        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameof(MapperType)).Value ?? MethodType.None);
+        // You need to increment the value with 1, else it will give an incorrect value.
+        => (MethodType)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameof(MapperType)).Value ?? MethodType.None)+1;
     
     static MappingStrategy GetMappingStrategy(AttributeData? attribute)
         => (MappingStrategy)(attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameof(MappingStrategy)).Value ?? MappingStrategy.Normal);
@@ -113,7 +151,7 @@ internal static class MethodHelper
         if (sourceClass.IsAbstract || attribute.GetValueOfNamedArgument<bool>("IsGeneric"))
             generatedToken.Generic = new MethodToken.GenericType(sourceClass.ToDisplayString());
 
-        generatedToken.Properties = PropertyHelper.GetValidProperties(sourceClass, targetClass, generatedToken.IsExpressionTree, compilation, methodKey, out var newNamespaces);
+        generatedToken.Properties = PropertyHelper.GetValidProperties(generatedToken, sourceClass, targetClass, compilation, methodKey, out var newNamespaces);
         
         return newNamespaces;
     }
