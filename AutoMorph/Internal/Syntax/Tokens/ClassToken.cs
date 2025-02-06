@@ -18,14 +18,9 @@ namespace AutoMorph.Internal.Syntax.Tokens;
 internal sealed record ClassToken
 {
     /// <summary>
-    /// What the generator should create the mappers to map from.
+    /// This just represents 
     /// </summary>
-    public ReferenceClassToken SourceClass { get; set; }
-
-    /// <summary>
-    /// What the generator should create the mappers to map to.
-    /// </summary>
-    public ReferenceClassToken TargetClass { get; set; }
+    public ReferenceClassToken AttachedSourceClass { get; init; }
 
     /// <summary>
     /// The namespace that the mapper should be generated into.
@@ -35,7 +30,7 @@ internal sealed record ClassToken
     /// <summary>
     /// Class visibility, this defaults to public if null.
     /// </summary>
-    public VisibilityKind Visibility { get; set; }
+    public VisibilityKind Visibility { get; init; }
 
     /// <summary>
     /// <para>
@@ -45,14 +40,6 @@ internal sealed record ClassToken
     /// </para>
     /// </summary>
     public List<ModifierKind> Modifiers { get; set; } = [];
-
-    // /// <summary>
-    // /// <para>
-    // ///     Contains the properties that should be mapped, and their target property. <br />
-    // ///     This is being used by all the methods.
-    // /// </para>
-    // /// </summary>
-    // public HashSet<ReferencePropertyToken> Properties { get; set; } = [];
 
     /// <summary>
     /// <para>

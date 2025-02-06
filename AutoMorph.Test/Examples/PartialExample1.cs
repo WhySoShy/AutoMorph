@@ -5,34 +5,21 @@ using AutoMorph.Abstractions.Enums;
 
 namespace AutoMorph.Test.Examples;
 
-[Mapper<ExampleTarget>]
-public class Example
+[Mapper]
+[Include<TargetClass>(MapperType.Standard, MappingStrategy.Both, Key = "standardMapper")]
+[Include<TargetClass>(MapperType.Standard, Key = "linqMapper", MapperName = "StandardMapper2")]
+public class SourceClass
 {
-    public string Hello { get; set; }
-
-    [Property(nameof(ExampleTarget.IntTarget))]
-    public decimal SourceDecimal { get; set; } // Auto targets the property ExampleTarget.Hello
+    public string Name { get; set; }
     
-    [Property(nameof(ExampleTarget.DecimalTarget))]
-    public int IntSource { get; set; }
-    
-    [Property(nameof(ExampleTarget.StringTarget))]
-    public decimal DecimalSource { get; set; }
+    [Property(nameof(TargetClass.PersonAge), Key = "linqMapper")]
+    [Exclude]
+    public int Age { get; set; }
 }
 
-
-public abstract class ExampleTarget : IExample
+public class TargetClass 
 {
-    public string Hello { get; set; }
-
-    public int IntTarget { get; set; }
-    public decimal DecimalTarget { get; set; }
-    
-    public string StringTarget { get; set; }
-}
-
-[Mapper<Example>]
-public interface IExample
-{
-    public string Hello { get; set; }
+    public string Name { get; set; }
+    public int PersonAge { get; set; }
+    public int Age { get; set; }
 }
