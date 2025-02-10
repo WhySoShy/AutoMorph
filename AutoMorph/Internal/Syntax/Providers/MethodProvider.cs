@@ -1,7 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Linq;
 using AutoMorph.Internal.Constants;
-using AutoMorph.Internal.Generator.GeneratorHelpers;
+using AutoMorph.Internal.Generator;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Providers.Enums;
 using AutoMorph.Internal.Syntax.Tokens;

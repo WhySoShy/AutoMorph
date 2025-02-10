@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMorph.Internal.Generator.Casting;
-using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator;
 
 public static partial class PropertyHelper
 {
@@ -19,8 +18,7 @@ public static partial class PropertyHelper
         newNamespace = null;
 
         // Just return an empty object, if it is not an object or collection.
-        if (!(sourceProperty.Type.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Array &&
-              sourceProperty.Type.SpecialType is SpecialType.None))
+        if (!(sourceProperty.Type.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Array && sourceProperty.Type.SpecialType is SpecialType.None))
             return null;
         
         string name = sourceProperty.Type is IArrayTypeSymbol ? ValidCollections.ARRAY_CUSTOM : sourceProperty.Type.OriginalDefinition.ToDisplayString();

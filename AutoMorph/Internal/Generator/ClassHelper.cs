@@ -2,11 +2,12 @@
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
 using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Generator.Helpers;
 using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator;
 
 internal static class ClassHelper
 {

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator.Helpers;
 
 internal static class AttributeHelper
 {

@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
 using AutoMorph.Abstractions.Enums;
 using AutoMorph.Internal.Generator.Casting;
-using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Generator.Helpers;
 using AutoMorph.Internal.Syntax.Tokens;
-using AutoMorph.Internal.Syntax.Types;
 using Microsoft.CodeAnalysis;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator;
 
 public static partial class PropertyHelper
 {  

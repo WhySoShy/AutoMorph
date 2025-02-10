@@ -1,14 +1,14 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-using AutoMorph.Internal.Syntax.Kinds;
-using AutoMorph.Internal.Syntax.Types;
-using AutoMorph.Internal.Syntax.Tokens;
 using AutoMorph.Abstractions.Attributes;
 using AutoMorph.Abstractions.Enums;
+using AutoMorph.Internal.Generator.Helpers;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Tokens;
+using AutoMorph.Internal.Syntax.Types;
+using Microsoft.CodeAnalysis;
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator;
 
 internal static class MethodHelper
 {

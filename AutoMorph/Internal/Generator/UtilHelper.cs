@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using AutoMorph.Internal.Constants;
+using AutoMorph.Internal.Syntax.Kinds;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
-using AutoMorph.Internal.Syntax.Kinds;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace AutoMorph.Internal.Generator.GeneratorHelpers;
+namespace AutoMorph.Internal.Generator;
 
 internal static class UtilHelper
 {

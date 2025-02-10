@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using AutoMorph.Internal.Generator.GeneratorHelpers;
+using AutoMorph.Internal.Generator;
 using AutoMorph.Internal.Syntax.Providers;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
