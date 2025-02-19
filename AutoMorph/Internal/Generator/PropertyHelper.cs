@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
 using AutoMorph.Abstractions.Enums;
 using AutoMorph.Internal.Generator.Casting;
+using AutoMorph.Internal.Generator.Enums;
 using AutoMorph.Internal.Generator.Helpers;
 using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis;
@@ -27,20 +29,19 @@ public static partial class PropertyHelper
     {
         newNamespaces = [];
         HashSet<ReferencePropertyToken> mappedProperties = [];
-
+        
         // Get the source and target properties, according to the rules set by the attached (if any) attributes.
-        if ((generatedToken.MappingStrategy is MappingStrategy.Normal ? sourceClass : targetClass).GetSourceProperties(methodKey) is not { Count: > 0 } sourceProperties || 
-            (generatedToken.MappingStrategy is MappingStrategy.Normal ? targetClass : sourceClass).GetTargetProperties() is not { Count: > 0 } targetProperties)
+        if (sourceClass.GetProperties(Type.Source, methodKey) is not { Count: > 0 } sourceProperties || 
+            targetClass.GetProperties(Type.Target) is not { Count: > 0 } targetProperties)
             return [];
         
         foreach (IPropertySymbol property in sourceProperties)
         {
             var foundPropertyAttribute = property.GetAttributeFromInterface<IPropertyAttribute>();
-            var properties = foundPropertyAttribute?.NamedArguments ?? [ ];
             
             // Check if the key of the property, matches the key of the declared mapper.
             // If not, it shouldn't continue. If the key is not present on the property, then it should be used as a global property, and be applied on all mappers on the source.
-            if (properties.FirstOrDefault(x => x.Key.Equals("Key")).Value is { Value: string key } && methodKey != key)
+            if (foundPropertyAttribute.AttributeKeyMatchesMethodKey(methodKey) is KeyMatch.Invalid)
                 continue;
             
             // Ensure that the target is either set by the property name or specially set by the user.
@@ -69,20 +70,6 @@ public static partial class PropertyHelper
         
         return mappedProperties;
     }
-    
-    static List<IPropertySymbol> GetSourceProperties(this INamedTypeSymbol sourceClass, string? methodKey) 
-        => sourceClass
-            .GetMembers()
-            .Where(x => x.Kind is SymbolKind.Property && x.ExcludeProperty(methodKey))
-            .Select(x => (x as IPropertySymbol)!)
-            .ToList();
-    
-    static List<IPropertySymbol> GetTargetProperties(this INamedTypeSymbol targetClass)
-        => targetClass
-            .GetMembers()
-            .Where(x => x.Kind is SymbolKind.Property)
-            .Select(x => (x as IPropertySymbol)!)
-            .ToList();
 
     /// <summary>
     /// Creates a PropertyToken that is being used as data reference to the property reading from.
@@ -92,15 +79,8 @@ public static partial class PropertyHelper
         return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree, compilation));
     }
 
-    /// <summary>
-    /// Checks if a property should be included determined by the methodKey.
-    /// </summary>
-    static bool ExcludeProperty(this ISymbol property, string? methodKey)
+    static ImmutableArray<KeyValuePair<string, TypedConstant>> GetNamedArgumentsFromAttribute(this AttributeData? attribute)
     {
-        string? foundExcludeKey = property.GetKeyFromAttributeInterface<IExcludeAttribute>();
-
-        // If the exclude key is present, that means the property will probably be ignored.
-        // if the exclude attribute is present without any key, then the property should just get ignored by all mappers.
-        return (foundExcludeKey is not null && foundExcludeKey == methodKey) || foundExcludeKey is null;
+        return attribute?.NamedArguments ?? [ ];
     }
 }

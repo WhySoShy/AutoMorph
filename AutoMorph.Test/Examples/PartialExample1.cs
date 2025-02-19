@@ -13,7 +13,7 @@ public class SourceClass
     public string Name { get; set; }
     
     [Property(nameof(TargetClass.PersonAge), Key = "linqMapper")]
-    [Exclude]
+    [Exclude(Key = "linqMapper")]
     public int Age { get; set; }
 }
 

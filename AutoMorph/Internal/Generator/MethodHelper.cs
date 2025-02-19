@@ -43,6 +43,7 @@ internal static class MethodHelper
                 ],
                 MappingStrategy.Reverse => [
                     ..nameSpaces,
+                    ..CreateMethod(targetClass, sourceClass, classToken, methodType, attribute, methods, compilation, MappingStrategy.Reverse),
                 ],
                 _ => [
                     ..nameSpaces, 
@@ -149,7 +150,7 @@ internal static class MethodHelper
     static HashSet<string> HandleGenerics(MethodToken generatedToken, INamedTypeSymbol sourceClass, INamedTypeSymbol targetClass, AttributeData attribute, Compilation compilation, string? methodKey)
     {
         if (sourceClass.IsAbstract || attribute.GetValueOfNamedArgument<bool>("IsGeneric"))
-            generatedToken.Generic = new MethodToken.GenericType(sourceClass.ToDisplayString());
+            generatedToken.Generic = new MethodToken.GenericType((generatedToken.MappingStrategy is MappingStrategy.Normal ? sourceClass : targetClass).ToDisplayString());
 
         generatedToken.Properties = PropertyHelper.GetValidProperties(generatedToken, sourceClass, targetClass, compilation, methodKey, out var newNamespaces);
         

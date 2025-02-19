@@ -1,52 +1,59 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Internal.Generator.Enums;
 using Microsoft.CodeAnalysis;
 
 namespace AutoMorph.Internal.Generator.Helpers;
 
 internal static class PropertyHelper
 {
-    internal static List<IPropertySymbol> GetProperties(this INamedTypeSymbol symbolClass, Type searchIn, string methodKey = "")
+    /// <summary>
+    /// Gets all properties from a valid type.
+    /// </summary>
+    /// <param name="symbol">Type that should be looked through</param>
+    /// <param name="searchIn">This defines how the properties will be included / excluded, read more: <see cref="Type"/></param>
+    /// <param name="methodKey"></param>
+    internal static List<IPropertySymbol> GetProperties(this INamedTypeSymbol symbol, Type searchIn, string? methodKey = "")
     {
-        return symbolClass
+        return symbol
             .GetMembers()
-            .Where(x => x.Kind is SymbolKind.Property && (searchIn is Type.Target || x.ExcludeProperty(methodKey)))
+            .Where(x => x.Kind is SymbolKind.Property && (searchIn is Type.Target || !x.ContainsExcludeAttribute(methodKey)))
             .Select(x => (x as IPropertySymbol)!)
             .ToList();
+    }
+
+    internal static KeyMatch AttributeKeyMatchesMethodKey(this AttributeData? attribute, string? methodKey)
+    {
+        if (attribute.GetNamedArgumentsFromAttribute().FirstOrDefault(x => x.Key.Equals("Key")).Value is not { Value: string key })
+            return KeyMatch.Global;
+
+        return methodKey == key ? KeyMatch.Valid : KeyMatch.Invalid;
     }
     
     /// <summary>
     /// Checks if a property should be included determined by the methodKey.
     /// </summary>
-    static bool ExcludeProperty(this ISymbol property, string? methodKey)
+    internal static bool ContainsExcludeAttribute(this ISymbol property, string? methodKey)
     {
         string? foundExcludeKey = property.GetKeyFromAttributeInterface<IExcludeAttribute>();
 
-        // If the exclude key is present, that means the property will probably be ignored.
-        // if the exclude attribute is present without any key, then the property should just get ignored by all mappers.
-        return (foundExcludeKey is not null && foundExcludeKey == methodKey) || foundExcludeKey is null;
+        // If no key is present, the exclude applies globally (return true).
+        if (foundExcludeKey is null)
+            return false;
+
+        // If the key matches methodKey, apply the exclude (return true).
+        if (foundExcludeKey == methodKey)
+            return true;
+
+        // If the key is present but does NOT match methodKey, do NOT exclude (return false).
+        return false;
     }
 
-    internal enum Type
+    
+    static ImmutableArray<KeyValuePair<string, TypedConstant>> GetNamedArgumentsFromAttribute(this AttributeData? attribute)
     {
-        Source,
-        Target
-    }
-
-    internal enum KeyStatus
-    {
-        /// <summary>
-        /// Meaning there is no key attached to the attribute.
-        /// </summary>
-        None,
-        /// <summary>
-        /// Meaning the key attached to the attribute was found on an Include.
-        /// </summary>
-        Valid,
-        /// <summary>
-        /// Meaning the key attached to the attribute was not found on any Include.
-        /// </summary>
-        Invalid,
+        return attribute?.NamedArguments ?? [ ];
     }
 }
