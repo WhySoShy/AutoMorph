@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 
 namespace AutoMorph.Internal.Generator;
 
-internal static class ClassHelper
+internal static class ClassBuilder
 {
     /// <summary>
     /// Contains all the classes that already got a structure.
@@ -35,7 +35,7 @@ internal static class ClassHelper
         if (!generatedToken.Modifiers.Any())
             generatedToken.Modifiers = GetModifiers(sourceSymbol);
         
-        if (MethodHelper.GetMethods(sourceSymbol, generatedToken, compilation, out var newNamespaces) is not { Count: > 0 } methods)
+        if (MethodBuilder.GetMethods(sourceSymbol, generatedToken, compilation, out var newNamespaces) is not { Count: > 0 } methods)
             return null;
         
         // The methods generated, should be generated no matter what because the class may want more mappers generated, than the cached class has.

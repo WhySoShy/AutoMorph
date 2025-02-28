@@ -39,18 +39,40 @@ internal static class PropertyHelper
     {
         string? foundExcludeKey = property.GetKeyFromAttributeInterface<IExcludeAttribute>();
 
-        // If no key is present, the exclude applies globally (return true).
+        // If no key is present, then the exclusion applies globally.
         if (foundExcludeKey is null)
             return false;
 
-        // If the key matches methodKey, apply the exclude (return true).
+        // If the key matches methodKey, apply the exclusion.
         if (foundExcludeKey == methodKey)
             return true;
 
-        // If the key is present but does NOT match methodKey, do NOT exclude (return false).
+        // If the key is present but does NOT match methodKey, do NOT exclude.
         return false;
     }
 
+    /// <summary>
+    /// Gets the target property from the <see cref="targetProperties"/>
+    /// </summary>
+    /// <returns>true if the <see cref="targetProperty"/> is not null</returns>
+    internal static bool GetTargetProperty(this AttributeData? sourceAttribute, IPropertySymbol sourceProperty, List<IPropertySymbol> targetProperties, out IPropertySymbol? targetProperty)
+    {
+        // Ensure that the target is either set by the property name or specifically set by the user.
+        string nameOfTarget = sourceAttribute?.ConstructorArguments[0].Value?.ToString() ?? sourceProperty.Name;
+        
+        targetProperty = targetProperties.FirstOrDefault(x => x.Name == nameOfTarget);
+        targetProperties.Remove(targetProperty);
+        
+        return targetProperty is not null;
+    }
+
+    /// <summary>
+    /// Checks whether the Get-Set methods can reach each other
+    /// </summary>
+    internal static bool GetSetCanReach(IPropertySymbol targetProperty, IPropertySymbol sourceProperty)
+    {
+        return UtilHelper.SymbolsCanReach(targetProperty, sourceProperty.GetMethod) && UtilHelper.SymbolsCanReach(sourceProperty, targetProperty.SetMethod);
+    }
     
     static ImmutableArray<KeyValuePair<string, TypedConstant>> GetNamedArgumentsFromAttribute(this AttributeData? attribute)
     {

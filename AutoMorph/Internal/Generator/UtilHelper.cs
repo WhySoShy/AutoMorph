@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using AutoMorph.Internal.Constants;
-using AutoMorph.Internal.Syntax.Kinds;
-using AutoMorph.Internal.Syntax.Tokens;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using AutoMorph.Internal.Syntax.Kinds;
+using AutoMorph.Internal.Syntax.Tokens;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AutoMorph.Internal.Generator;
@@ -37,7 +37,8 @@ internal static class UtilHelper
     
     static bool IsRestrictedVisibility(this Accessibility visibility)
     {
-        return visibility is Accessibility.NotApplicable
+        return visibility 
+            is Accessibility.NotApplicable
             or Accessibility.Private
             or Accessibility.Protected
             or Accessibility.ProtectedOrFriend;
@@ -55,6 +56,7 @@ internal static class UtilHelper
             CastingKind.TryParseToString => $"{targetProperty.ValueType}.TryParse({sourceReference}.{sourceProperty.Name}.ToString(), out {targetProperty.ValueType} entity) ? entity : default",
             CastingKind.Parse => $"{targetProperty.ValueType}.Parse({sourceReference}.{sourceProperty.Name})",
             CastingKind.ParseToString => $"{targetProperty.ValueType}.Parse({sourceReference}.{sourceProperty.Name}.ToString())",
+            _ => throw new ArgumentOutOfRangeException()
         };
     
     /// <summary>
@@ -68,10 +70,6 @@ internal static class UtilHelper
     /// </summary>
     internal static string SymbolAsQualifiedName(this ISymbol symbol)
         => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-    internal static string AttributeAsQualifiedName(this string nameOfAttribute)
-        => AssemblyConstants.FULLY_QUALIFIED_ATTRIBUTE_NAMESPACE + "." + nameOfAttribute;
-    
 
     internal static TypeDeclarationSyntax GetTypeDeclaration(this INamedTypeSymbol symbol)
         => (symbol.DeclaringSyntaxReferences.FirstOrDefault()!.GetSyntax() as TypeDeclarationSyntax)!;

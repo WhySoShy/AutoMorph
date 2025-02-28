@@ -17,6 +17,10 @@ internal static class AttributeHelper
     internal static T? GetValueOfNamedArgument<T>(this AttributeData attribute, string argumentName)
         => attribute.NamedArguments.FirstOrDefault(x => x.Key.Equals(argumentName)).Value.Value is T value ? value : default;
     
+    
+    internal static T GetConstructorArgument<T>(this AttributeData? attribute, string nameOfArgument, T defaultValue)
+        => (T)attribute?.ConstructorArguments.FirstOrDefault(x => x.Type?.Name == nameOfArgument).Value! ?? defaultValue;
+    
     internal static bool IsAttributeOfInterface<T>(this AttributeData source)
     {
         return (bool)source.AttributeClass?.AllInterfaces.Any(x => x.ToDisplayString() == typeof(T).FullName);

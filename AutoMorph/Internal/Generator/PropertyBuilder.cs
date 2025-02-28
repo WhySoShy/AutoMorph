@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using AutoMorph.Abstractions.Attributes;
-using AutoMorph.Abstractions.Enums;
-using AutoMorph.Internal.Generator.Casting;
-using AutoMorph.Internal.Generator.Enums;
-using AutoMorph.Internal.Generator.Helpers;
-using AutoMorph.Internal.Syntax.Tokens;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
+using AutoMorph.Internal.Syntax.Tokens;
+using AutoMorph.Abstractions.Attributes;
+using AutoMorph.Internal.Generator.Enums;
+using AutoMorph.Internal.Generator.Casting;
+using AutoMorph.Internal.Generator.Helpers;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
 namespace AutoMorph.Internal.Generator;
 
-public static partial class PropertyHelper
+public static partial class PropertyBuilder
 {  
     /// <summary>
     /// Gets the properties that is valid according to the attached attributes.
@@ -44,17 +42,14 @@ public static partial class PropertyHelper
             if (foundPropertyAttribute.AttributeKeyMatchesMethodKey(methodKey) is KeyMatch.Invalid)
                 continue;
             
-            // Ensure that the target is either set by the property name or specially set by the user.
-            string nameOfTargetProperty = foundPropertyAttribute?.ConstructorArguments[0].Value as string ?? property.Name;
             
             // Ensure that the target is found, not excluded and visible to the source property.
-            if (targetProperties.FirstOrDefault(x => x.Name == nameOfTargetProperty) is not { } foundTargetProperty || 
-                !UtilHelper.SymbolsCanReach(foundTargetProperty, property.GetMethod!) || !UtilHelper.SymbolsCanReach(property, foundTargetProperty.SetMethod!)) 
+            if (foundPropertyAttribute.GetTargetProperty(property, targetProperties, out var foundTargetProperty) || PropertyHelper.GetSetCanReach(foundTargetProperty!, property)) 
                 continue;
             
             ReferencePropertyToken newlyMappedProperty = new ReferencePropertyToken(
-                    property.GetProperty(foundTargetProperty, generatedToken.IsExpressionTree, compilation), 
-                    foundTargetProperty.GetProperty(property, generatedToken.IsExpressionTree, compilation)
+                    property.GetProperty(foundTargetProperty!, generatedToken.IsExpressionTree, compilation), 
+                    foundTargetProperty!.GetProperty(property, generatedToken.IsExpressionTree, compilation)
                 )
                 {
                     NestedObject = GetNestedPropertyTokens(property, compilation, out string? newNamespace)
@@ -65,7 +60,7 @@ public static partial class PropertyHelper
 
             mappedProperties.Add(newlyMappedProperty);
             // Remove it from the list, because it should only be added once.
-            targetProperties.Remove(foundTargetProperty);
+            targetProperties.Remove(foundTargetProperty!);
         }
         
         return mappedProperties;
@@ -77,10 +72,5 @@ public static partial class PropertyHelper
     static ReferencePropertyToken.Property GetProperty(this IPropertySymbol property, IPropertySymbol targetProperty, bool mapperIsExpressionTree, Compilation compilation)
     {
         return new(property.Name, property.Type.ToDisplayString(), property.Type.GetCastingKind(targetProperty.Type, mapperIsExpressionTree, compilation));
-    }
-
-    static ImmutableArray<KeyValuePair<string, TypedConstant>> GetNamedArgumentsFromAttribute(this AttributeData? attribute)
-    {
-        return attribute?.NamedArguments ?? [ ];
     }
 }

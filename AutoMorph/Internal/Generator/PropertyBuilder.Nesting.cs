@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 namespace AutoMorph.Internal.Generator;
 
-public static partial class PropertyHelper
+public static partial class PropertyBuilder
 {
     /// <summary>
     /// Used to handle nesting in properties, if any objects needs a mapper attached to them, they will get created here.
@@ -43,7 +43,7 @@ public static partial class PropertyHelper
         // Right now I don't have a way to secure that I get the correct TypeSymbol, so this is the way to go
         INamedTypeSymbol? targetAsINamedTypeSymbol = sourceProperty.Type.AllInterfaces.FirstOrDefault(x => x.TypeArguments.Any())?.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
         
-        ClassToken? classToken = ClassHelper.GenerateClassToken(targetAsINamedTypeSymbol, compilation);
+        ClassToken? classToken = ClassBuilder.GenerateClassToken(targetAsINamedTypeSymbol, compilation);
         
         // If it could not find a suitable MethodToken, then it should just default to IEnumerable.
         MethodToken? methodToken = classToken is null ? null : classToken.Methods.FirstOrDefault(x => x.GetReferenceSourceName().Equals(allowedCollection.Key)) ?? 
@@ -59,7 +59,7 @@ public static partial class PropertyHelper
 
     static ReferencePropertyToken.NestedObjectToken? HandleObject(IPropertySymbol sourceProperty, Compilation compilation, out string? newNamespace)
     {
-        ClassToken? classToken = ClassHelper.GenerateClassToken(sourceProperty.Type as INamedTypeSymbol, compilation);
+        ClassToken? classToken = ClassBuilder.GenerateClassToken(sourceProperty.Type as INamedTypeSymbol, compilation);
 
         MethodToken? methodToken = classToken?.Methods.FirstOrDefault(x => x.Type is MethodType.Standard);
 
